@@ -3,20 +3,33 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: New Testament Priests Church API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: support
+    description: Ministry support form submissions
+  - name: membership
+    description: Membership/join requests
+  - name: posts
+    description: Weekly church posts
+  - name: events
+    description: Upcoming events
+  - name: scripture
+    description: Daily scripture
+  - name: departments
+    description: Church departments
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +37,271 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: adminLogin
+      tags: [auth]
+      summary: Admin or members login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /support:
+    get:
+      operationId: listSupportSubmissions
+      tags: [support]
+      summary: List all ministry support form submissions (admin only)
+      responses:
+        "200":
+          description: List of support submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupportSubmission"
+    post:
+      operationId: createSupportSubmission
+      tags: [support]
+      summary: Submit a ministry support form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupportSubmission"
+      responses:
+        "201":
+          description: Submission created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportSubmission"
+
+  /membership:
+    get:
+      operationId: listMembershipRequests
+      tags: [membership]
+      summary: List all membership join requests (admin/members)
+      responses:
+        "200":
+          description: List of membership requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MembershipRequest"
+    post:
+      operationId: createMembershipRequest
+      tags: [membership]
+      summary: Submit a membership join request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMembershipRequest"
+      responses:
+        "201":
+          description: Request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MembershipRequest"
+
+  /posts:
+    get:
+      operationId: listPosts
+      tags: [posts]
+      summary: List all weekly church posts
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create a new weekly post (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePost"
+      responses:
+        "201":
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /posts/{id}:
+    get:
+      operationId: getPost
+      tags: [posts]
+      summary: Get a single post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+    delete:
+      operationId: deletePost
+      tags: [posts]
+      summary: Delete a post (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List all upcoming events
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create an upcoming event (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEvent"
+      responses:
+        "201":
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+
+  /events/{id}:
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete an event (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /scripture:
+    get:
+      operationId: getLatestScripture
+      tags: [scripture]
+      summary: Get the latest daily scripture
+      responses:
+        "200":
+          description: Latest scripture
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scripture"
+    post:
+      operationId: createScripture
+      tags: [scripture]
+      summary: Post a new daily scripture (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateScripture"
+      responses:
+        "201":
+          description: Scripture created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scripture"
+
+  /departments:
+    get:
+      operationId: listDepartments
+      tags: [departments]
+      summary: List all church departments
+      responses:
+        "200":
+          description: List of departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Department"
+
+  /departments/{id}:
+    get:
+      operationId: getDepartment
+      tags: [departments]
+      summary: Get a single department with full details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The department
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +312,315 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [admin, members]
+        token:
+          type: string
+      required:
+        - role
+        - token
+
+    SupportSubmission:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        occupation:
+          type: string
+        amountPerMonth:
+          type: number
+        amountPerYear:
+          type: number
+        reason:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - firstName
+        - middleName
+        - lastName
+        - phone
+        - email
+        - address
+        - occupation
+        - amountPerMonth
+        - amountPerYear
+        - reason
+        - createdAt
+
+    CreateSupportSubmission:
+      type: object
+      properties:
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        occupation:
+          type: string
+        amountPerMonth:
+          type: number
+        amountPerYear:
+          type: number
+        reason:
+          type: string
+      required:
+        - firstName
+        - middleName
+        - lastName
+        - phone
+        - email
+        - address
+        - occupation
+        - amountPerMonth
+        - amountPerYear
+        - reason
+
+    MembershipRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        occupation:
+          type: string
+        previousChurch:
+          type: string
+        servingAs:
+          type: string
+        baptized:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - firstName
+        - middleName
+        - lastName
+        - phone
+        - email
+        - address
+        - occupation
+        - previousChurch
+        - servingAs
+        - baptized
+        - createdAt
+
+    CreateMembershipRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        occupation:
+          type: string
+        previousChurch:
+          type: string
+        servingAs:
+          type: string
+        baptized:
+          type: boolean
+      required:
+        - firstName
+        - middleName
+        - lastName
+        - phone
+        - email
+        - address
+        - occupation
+        - previousChurch
+        - servingAs
+        - baptized
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        highlights:
+          type: string
+        photoUrl:
+          type: string
+        facebookUrl:
+          type: string
+        youtubeUrl:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - highlights
+        - createdAt
+
+    CreatePost:
+      type: object
+      properties:
+        title:
+          type: string
+        highlights:
+          type: string
+        photoUrl:
+          type: string
+        facebookUrl:
+          type: string
+        youtubeUrl:
+          type: string
+      required:
+        - title
+        - highlights
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+        imageUrl:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - description
+        - date
+        - createdAt
+
+    CreateEvent:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+        imageUrl:
+          type: string
+      required:
+        - title
+        - description
+        - date
+
+    Scripture:
+      type: object
+      properties:
+        id:
+          type: integer
+        verse:
+          type: string
+        reference:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - verse
+        - reference
+        - createdAt
+
+    CreateScripture:
+      type: object
+      properties:
+        verse:
+          type: string
+        reference:
+          type: string
+      required:
+        - verse
+        - reference
+
+    Department:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        groupPhotoUrl:
+          type: string
+        members:
+          type: array
+          items:
+            type: string
+        activities:
+          type: string
+        meetingTime:
+          type: string
+      required:
+        - id
+        - name
+        - description

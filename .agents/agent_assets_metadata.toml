@@ -1,0 +1,50 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "2eMFlyMm5qMfyznmRZi3t"
+uri = "file://artifacts/ntpc-website/src/assets/dept-choir.png"
+type = "image"
+title = "Church choir worship group"
+
+[[generated]]
+id = "zRFbromfA2kR8emvfkSU4"
+uri = "file://artifacts/ntpc-website/src/assets/dept-children.png"
+type = "image"
+title = "Children ministry learning"
+
+[[generated]]
+id = "d1xNLmrCbCrjNnHgzu8-h"
+uri = "file://artifacts/ntpc-website/src/assets/dept-women.png"
+type = "image"
+title = "Women ministry gathering"
+
+[[generated]]
+id = "d01crmAWi-q6mgfVn_Fv9"
+uri = "file://artifacts/ntpc-website/src/assets/dept-evangelism.png"
+type = "image"
+title = "Evangelism outreach team"
+
+[[generated]]
+id = "Vf9F-ldPasviADAkDNmaW"
+uri = "file://artifacts/ntpc-website/src/assets/youth-camp-1.png"
+type = "image"
+title = "Youth camp worship outdoor"
+
+[[generated]]
+id = "yUzNpFG4HZ2JkGJ9GXbqR"
+uri = "file://artifacts/ntpc-website/src/assets/youth-camp-2.png"
+type = "image"
+title = "Youth camp teaching session"
+
+[[generated]]
+id = "wuLIteJFSVuayU_AmpGU1"
+uri = "file://artifacts/ntpc-website/src/assets/youth-camp-3.png"
+type = "image"
+title = "Youth camp bonfire prayer"
+
+[[generated]]
+id = "3P0pWFBFAQgv_RKKBziZb"
+uri = "file://artifacts/ntpc-website/src/assets/youth-camp-4.png"
+type = "image"
+title = "Youth camp joy and fellowship"
