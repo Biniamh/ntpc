@@ -42,7 +42,7 @@ export default function Join() {
   function onSubmit(data: FormValues) {
     create.mutate({ data }, {
       onSuccess: () => {
-        toast({ title: language === 'am' ? 'ተቀብሏል!' : 'Request Submitted!', description: language === 'am' ? 'ሌላ ጊዜ ቤተ ክርስቲያን ይቀላቀሉ!' : 'Welcome to the family! We will be in touch.' });
+        toast({ title: language === 'am' ? 'ተቀብሏል!' : 'Request Submitted!', description: language === 'am' ? 'እንኩዋን ወደ ቤተሰባችን ተቀላቀሉ, አስተባባሪዎች ይደውልሎታል!' : 'Welcome to the family! We will be in touch.' });
         form.reset();
       },
       onError: () => {

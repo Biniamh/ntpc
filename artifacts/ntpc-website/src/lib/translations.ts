@@ -6,8 +6,8 @@ export const translations = {
       departments: "Departments",
       programs: "Programs",
       events: "Events",
-      posts: "Weekly Posts",
-      youth: "Youth",
+      posts: "Weekly Sermons",
+      youth: "Excellent Youth",
       support: "Support",
       join: "Join Us",
       contact: "Contact",
@@ -20,7 +20,8 @@ export const translations = {
       support: "Support Ministry",
     },
     footer: {
-      description: "Ethiopian New Testament Priests Church. A vibrant community of faith in Addis Ababa.",
+      description:
+        "Ethiopian New Testament Priests Church. A vibrant community of faith in Addis Ababa.",
       rights: "All rights reserved.",
     },
     common: {
@@ -30,7 +31,7 @@ export const translations = {
       success: "Success",
       read_more: "Read More",
       view_all: "View All",
-    }
+    },
   },
   am: {
     nav: {
@@ -39,8 +40,8 @@ export const translations = {
       departments: "ክፍሎች",
       programs: "ፕሮግራሞች",
       events: "ዝግጅቶች",
-      posts: "ሳምንታዊ ጽሑፎች",
-      youth: "ወጣቶች",
+      posts: "ሳምንታዊ ስብከቶች",
+      youth: "መልካም ወጣት",
       support: "ድጋፍ",
       join: "አባል ይሁኑ",
       contact: "አድራሻ",
@@ -53,7 +54,8 @@ export const translations = {
       support: "አገልግሎቱን ይደግፉ",
     },
     footer: {
-      description: "የኢትዮጵያ አዲስ ኪዳን ካህናት ቤተክርስቲያን። በአዲስ አበባ የሚገኝ ህያው የእምነት ማህበረሰብ።",
+      description:
+        "የኢትዮጵያ አዲስ ኪዳን ካህናት ቤተክርስቲያን። በአዲስ አበባ የሚገኝ ህያው የእምነት ማህበረሰብ።",
       rights: "መብቱ በህግ የተጠበቀ ነው።",
     },
     common: {
@@ -63,9 +65,9 @@ export const translations = {
       success: "በተሳካ ሁኔታ ተጠናቋል",
       read_more: "ተጨማሪ ያንብቡ",
       view_all: "ሁሉንም ይመልከቱ",
-    }
-  }
+    },
+  },
 };
 
-export type Language = 'en' | 'am';
+export type Language = "en" | "am";
 export type TranslationKey = keyof typeof translations.en;

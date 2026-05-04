@@ -16,7 +16,7 @@ export default function Posts() {
       <section className="bg-primary text-primary-foreground py-16 text-center">
         <div className="container px-4 mx-auto">
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            {language === 'am' ? 'ሳምንታዊ ጽሑፎች' : 'Weekly Posts'}
+            {language === 'am' ? 'ሳምንታዊ ስብከቶች ' : 'Weekly Sermons'}
           </h1>
           <p className="text-primary-foreground/80 text-lg">
             {language === 'am' ? 'ሳምንታዊ የስብከትና ዜና ጽሑፎቻችን' : 'Weekly sermon highlights and church news'}

@@ -17,7 +17,7 @@ export default function Events() {
             {language === 'am' ? 'መጪ ዝግጅቶች' : 'Upcoming Events'}
           </h1>
           <p className="text-secondary-foreground/80 text-lg">
-            {language === 'am' ? 'ቀጣዩን ዝግጅት አፅናፉ!' : 'Don\'t miss what God is doing next!'}
+            {language === 'am' ? 'ቀጣዩ ዝግጅት እንዳያልፎዎት!' : 'Don\'t miss what God is doing next!'}
           </p>
         </div>
       </section>

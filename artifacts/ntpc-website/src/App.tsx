@@ -19,6 +19,7 @@ import PostDetail from "@/pages/post-detail";
 import Youth from "@/pages/youth";
 import Support from "@/pages/support";
 import Join from "@/pages/join";
+import Eyregister from "@/pages/ey-register";
 import Contact from "@/pages/contact";
 import Admin from "@/pages/admin";
 import Members from "@/pages/members";
@@ -53,6 +54,10 @@ function Router() {
               <Route path="/youth" component={Youth} />
               <Route path="/support" component={Support} />
               <Route path="/join" component={Join} />
+              
+<Route path="/ey-register" 
+  component={Eyregister} />
+              
               <Route path="/contact" component={Contact} />
               <Route component={NotFound} />
             </Switch>
