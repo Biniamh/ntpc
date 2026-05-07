@@ -82,11 +82,10 @@ export default function Youth() {
             size="lg"
             className="rounded-full px-10 bg-white text-primary hover:bg-white/90 font-bold text-lg h-auto py-4"
           >
-            <Link href="/ey-support">
+            <Link href="/support">
               {language === "am" ? "መልካም ወጣት ለመደገፍ" : "Support Excellent Youth"}
             </Link>
           </Button>
-          
         </div>
       </section>
 
@@ -187,13 +186,13 @@ export default function Youth() {
               </Link>
             </Button>
 
-<Button asChild size="lg" className="rounded-full px-10">
-              <Link href="/ey-support">
-                {language === "am" ? "መልካም ወጣት ለመደገፍ" : "Support Excellent Youth"}
+            <Button asChild size="lg" className="rounded-full px-10">
+              <Link href="/support">
+                {language === "am"
+                  ? "መልካም ወጣት ለመደገፍ"
+                  : "Support Excellent Youth"}
               </Link>
             </Button>
-
-            
           </div>
         </div>
       </section>

@@ -3,6 +3,9 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import dotenv from "dotenv";
+
+dotenv.config({ path: path.resolve(import.meta.dirname, ".env") });
 
 const rawPort = process.env.PORT;
 
@@ -65,6 +68,13 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
+    },
+    proxy: {
+      "/api": {
+        target: process.env.API_URL ?? "http://localhost:4000",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   preview: {
