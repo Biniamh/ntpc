@@ -18,6 +18,10 @@ import type {
 
 import type {
   CreateEvent,
+  CreateEyCoordinator,
+  CreateEyEvent,
+  CreateEyParticipant,
+  CreateEyRound,
   CreateMembershipRequest,
   CreatePost,
   CreateScripture,
@@ -25,6 +29,10 @@ import type {
   Department,
   ErrorResponse,
   Event,
+  EyCoordinator,
+  EyEvent,
+  EyParticipant,
+  EyRound,
   HealthStatus,
   LoginRequest,
   LoginResponse,
@@ -32,6 +40,7 @@ import type {
   Post,
   Scripture,
   SupportSubmission,
+  UpdateEyParticipant,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -759,6 +768,93 @@ export function useGetPost<
 }
 
 /**
+ * @summary Update a post (admin only)
+ */
+export const getUpdatePostUrl = (id: number) => {
+  return `/api/posts/${id}`;
+};
+
+export const updatePost = async (
+  id: number,
+  createPost: CreatePost,
+  options?: RequestInit,
+): Promise<Post> => {
+  return customFetch<Post>(getUpdatePostUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createPost),
+  });
+};
+
+export const getUpdatePostMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePost>>,
+    TError,
+    { id: number; data: BodyType<CreatePost> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updatePost>>,
+  TError,
+  { id: number; data: BodyType<CreatePost> },
+  TContext
+> => {
+  const mutationKey = ["updatePost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePost>>,
+    { id: number; data: BodyType<CreatePost> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updatePost(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdatePostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updatePost>>
+>;
+export type UpdatePostMutationBody = BodyType<CreatePost>;
+export type UpdatePostMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a post (admin only)
+ */
+export const useUpdatePost = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePost>>,
+    TError,
+    { id: number; data: BodyType<CreatePost> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updatePost>>,
+  TError,
+  { id: number; data: BodyType<CreatePost> },
+  TContext
+> => {
+  return useMutation(getUpdatePostMutationOptions(options));
+};
+
+/**
  * @summary Delete a post (admin only)
  */
 export const getDeletePostUrl = (id: number) => {
@@ -999,6 +1095,93 @@ export const useCreateEvent = <
   TContext
 > => {
   return useMutation(getCreateEventMutationOptions(options));
+};
+
+/**
+ * @summary Update an event (admin only)
+ */
+export const getUpdateEventUrl = (id: number) => {
+  return `/api/events/${id}`;
+};
+
+export const updateEvent = async (
+  id: number,
+  createEvent: CreateEvent,
+  options?: RequestInit,
+): Promise<Event> => {
+  return customFetch<Event>(getUpdateEventUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createEvent),
+  });
+};
+
+export const getUpdateEventMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEvent>>,
+    TError,
+    { id: number; data: BodyType<CreateEvent> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEvent>>,
+  TError,
+  { id: number; data: BodyType<CreateEvent> },
+  TContext
+> => {
+  const mutationKey = ["updateEvent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEvent>>,
+    { id: number; data: BodyType<CreateEvent> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateEvent(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEvent>>
+>;
+export type UpdateEventMutationBody = BodyType<CreateEvent>;
+export type UpdateEventMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update an event (admin only)
+ */
+export const useUpdateEvent = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEvent>>,
+    TError,
+    { id: number; data: BodyType<CreateEvent> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateEvent>>,
+  TError,
+  { id: number; data: BodyType<CreateEvent> },
+  TContext
+> => {
+  return useMutation(getUpdateEventMutationOptions(options));
 };
 
 /**
@@ -1407,3 +1590,1418 @@ export function useGetDepartment<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List all Excellent Youth events
+ */
+export const getListEyEventsUrl = () => {
+  return `/api/ey-events`;
+};
+
+export const listEyEvents = async (
+  options?: RequestInit,
+): Promise<EyEvent[]> => {
+  return customFetch<EyEvent[]>(getListEyEventsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListEyEventsQueryKey = () => {
+  return [`/api/ey-events`] as const;
+};
+
+export const getListEyEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEyEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEyEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListEyEventsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listEyEvents>>> = ({
+    signal,
+  }) => listEyEvents({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEyEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListEyEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEyEvents>>
+>;
+export type ListEyEventsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all Excellent Youth events
+ */
+
+export function useListEyEvents<
+  TData = Awaited<ReturnType<typeof listEyEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEyEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListEyEventsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create an Excellent Youth event (admin only)
+ */
+export const getCreateEyEventUrl = () => {
+  return `/api/ey-events`;
+};
+
+export const createEyEvent = async (
+  createEyEvent: CreateEyEvent,
+  options?: RequestInit,
+): Promise<EyEvent> => {
+  return customFetch<EyEvent>(getCreateEyEventUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createEyEvent),
+  });
+};
+
+export const getCreateEyEventMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEyEvent>>,
+    TError,
+    { data: BodyType<CreateEyEvent> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEyEvent>>,
+  TError,
+  { data: BodyType<CreateEyEvent> },
+  TContext
+> => {
+  const mutationKey = ["createEyEvent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEyEvent>>,
+    { data: BodyType<CreateEyEvent> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createEyEvent(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEyEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEyEvent>>
+>;
+export type CreateEyEventMutationBody = BodyType<CreateEyEvent>;
+export type CreateEyEventMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create an Excellent Youth event (admin only)
+ */
+export const useCreateEyEvent = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEyEvent>>,
+    TError,
+    { data: BodyType<CreateEyEvent> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createEyEvent>>,
+  TError,
+  { data: BodyType<CreateEyEvent> },
+  TContext
+> => {
+  return useMutation(getCreateEyEventMutationOptions(options));
+};
+
+/**
+ * @summary Get a single EY event
+ */
+export const getGetEyEventUrl = (id: number) => {
+  return `/api/ey-events/${id}`;
+};
+
+export const getEyEvent = async (
+  id: number,
+  options?: RequestInit,
+): Promise<EyEvent> => {
+  return customFetch<EyEvent>(getGetEyEventUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetEyEventQueryKey = (id: number) => {
+  return [`/api/ey-events/${id}`] as const;
+};
+
+export const getGetEyEventQueryOptions = <
+  TData = Awaited<ReturnType<typeof getEyEvent>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getEyEvent>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetEyEventQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getEyEvent>>> = ({
+    signal,
+  }) => getEyEvent(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getEyEvent>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetEyEventQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getEyEvent>>
+>;
+export type GetEyEventQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get a single EY event
+ */
+
+export function useGetEyEvent<
+  TData = Awaited<ReturnType<typeof getEyEvent>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getEyEvent>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetEyEventQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update an EY event (admin only)
+ */
+export const getUpdateEyEventUrl = (id: number) => {
+  return `/api/ey-events/${id}`;
+};
+
+export const updateEyEvent = async (
+  id: number,
+  createEyEvent: CreateEyEvent,
+  options?: RequestInit,
+): Promise<EyEvent> => {
+  return customFetch<EyEvent>(getUpdateEyEventUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createEyEvent),
+  });
+};
+
+export const getUpdateEyEventMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEyEvent>>,
+    TError,
+    { id: number; data: BodyType<CreateEyEvent> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEyEvent>>,
+  TError,
+  { id: number; data: BodyType<CreateEyEvent> },
+  TContext
+> => {
+  const mutationKey = ["updateEyEvent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEyEvent>>,
+    { id: number; data: BodyType<CreateEyEvent> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateEyEvent(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEyEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEyEvent>>
+>;
+export type UpdateEyEventMutationBody = BodyType<CreateEyEvent>;
+export type UpdateEyEventMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update an EY event (admin only)
+ */
+export const useUpdateEyEvent = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEyEvent>>,
+    TError,
+    { id: number; data: BodyType<CreateEyEvent> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateEyEvent>>,
+  TError,
+  { id: number; data: BodyType<CreateEyEvent> },
+  TContext
+> => {
+  return useMutation(getUpdateEyEventMutationOptions(options));
+};
+
+/**
+ * @summary Delete an EY event (admin only)
+ */
+export const getDeleteEyEventUrl = (id: number) => {
+  return `/api/ey-events/${id}`;
+};
+
+export const deleteEyEvent = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteEyEventUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteEyEventMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEyEvent>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteEyEvent>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteEyEvent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteEyEvent>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteEyEvent(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteEyEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteEyEvent>>
+>;
+
+export type DeleteEyEventMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete an EY event (admin only)
+ */
+export const useDeleteEyEvent = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEyEvent>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteEyEvent>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteEyEventMutationOptions(options));
+};
+
+/**
+ * @summary List all Excellent Youth rounds
+ */
+export const getListEyRoundsUrl = () => {
+  return `/api/ey-rounds`;
+};
+
+export const listEyRounds = async (
+  options?: RequestInit,
+): Promise<EyRound[]> => {
+  return customFetch<EyRound[]>(getListEyRoundsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListEyRoundsQueryKey = () => {
+  return [`/api/ey-rounds`] as const;
+};
+
+export const getListEyRoundsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEyRounds>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEyRounds>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListEyRoundsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listEyRounds>>> = ({
+    signal,
+  }) => listEyRounds({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEyRounds>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListEyRoundsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEyRounds>>
+>;
+export type ListEyRoundsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all Excellent Youth rounds
+ */
+
+export function useListEyRounds<
+  TData = Awaited<ReturnType<typeof listEyRounds>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEyRounds>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListEyRoundsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create an Excellent Youth round (admin only)
+ */
+export const getCreateEyRoundUrl = () => {
+  return `/api/ey-rounds`;
+};
+
+export const createEyRound = async (
+  createEyRound: CreateEyRound,
+  options?: RequestInit,
+): Promise<EyRound> => {
+  return customFetch<EyRound>(getCreateEyRoundUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createEyRound),
+  });
+};
+
+export const getCreateEyRoundMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEyRound>>,
+    TError,
+    { data: BodyType<CreateEyRound> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEyRound>>,
+  TError,
+  { data: BodyType<CreateEyRound> },
+  TContext
+> => {
+  const mutationKey = ["createEyRound"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEyRound>>,
+    { data: BodyType<CreateEyRound> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createEyRound(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEyRoundMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEyRound>>
+>;
+export type CreateEyRoundMutationBody = BodyType<CreateEyRound>;
+export type CreateEyRoundMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create an Excellent Youth round (admin only)
+ */
+export const useCreateEyRound = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEyRound>>,
+    TError,
+    { data: BodyType<CreateEyRound> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createEyRound>>,
+  TError,
+  { data: BodyType<CreateEyRound> },
+  TContext
+> => {
+  return useMutation(getCreateEyRoundMutationOptions(options));
+};
+
+/**
+ * @summary Update an EY round (admin only)
+ */
+export const getUpdateEyRoundUrl = (id: number) => {
+  return `/api/ey-rounds/${id}`;
+};
+
+export const updateEyRound = async (
+  id: number,
+  createEyRound: CreateEyRound,
+  options?: RequestInit,
+): Promise<EyRound> => {
+  return customFetch<EyRound>(getUpdateEyRoundUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createEyRound),
+  });
+};
+
+export const getUpdateEyRoundMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEyRound>>,
+    TError,
+    { id: number; data: BodyType<CreateEyRound> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEyRound>>,
+  TError,
+  { id: number; data: BodyType<CreateEyRound> },
+  TContext
+> => {
+  const mutationKey = ["updateEyRound"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEyRound>>,
+    { id: number; data: BodyType<CreateEyRound> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateEyRound(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEyRoundMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEyRound>>
+>;
+export type UpdateEyRoundMutationBody = BodyType<CreateEyRound>;
+export type UpdateEyRoundMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update an EY round (admin only)
+ */
+export const useUpdateEyRound = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEyRound>>,
+    TError,
+    { id: number; data: BodyType<CreateEyRound> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateEyRound>>,
+  TError,
+  { id: number; data: BodyType<CreateEyRound> },
+  TContext
+> => {
+  return useMutation(getUpdateEyRoundMutationOptions(options));
+};
+
+/**
+ * @summary Delete an EY round (admin only)
+ */
+export const getDeleteEyRoundUrl = (id: number) => {
+  return `/api/ey-rounds/${id}`;
+};
+
+export const deleteEyRound = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteEyRoundUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteEyRoundMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEyRound>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteEyRound>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteEyRound"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteEyRound>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteEyRound(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteEyRoundMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteEyRound>>
+>;
+
+export type DeleteEyRoundMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete an EY round (admin only)
+ */
+export const useDeleteEyRound = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEyRound>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteEyRound>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteEyRoundMutationOptions(options));
+};
+
+/**
+ * @summary List all Excellent Youth participants
+ */
+export const getListEyParticipantsUrl = () => {
+  return `/api/ey-participants`;
+};
+
+export const listEyParticipants = async (
+  options?: RequestInit,
+): Promise<EyParticipant[]> => {
+  return customFetch<EyParticipant[]>(getListEyParticipantsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListEyParticipantsQueryKey = () => {
+  return [`/api/ey-participants`] as const;
+};
+
+export const getListEyParticipantsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEyParticipants>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEyParticipants>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListEyParticipantsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listEyParticipants>>
+  > = ({ signal }) => listEyParticipants({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEyParticipants>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListEyParticipantsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEyParticipants>>
+>;
+export type ListEyParticipantsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all Excellent Youth participants
+ */
+
+export function useListEyParticipants<
+  TData = Awaited<ReturnType<typeof listEyParticipants>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEyParticipants>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListEyParticipantsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Register an Excellent Youth participant
+ */
+export const getCreateEyParticipantUrl = () => {
+  return `/api/ey-participants`;
+};
+
+export const createEyParticipant = async (
+  createEyParticipant: CreateEyParticipant,
+  options?: RequestInit,
+): Promise<EyParticipant> => {
+  return customFetch<EyParticipant>(getCreateEyParticipantUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createEyParticipant),
+  });
+};
+
+export const getCreateEyParticipantMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEyParticipant>>,
+    TError,
+    { data: BodyType<CreateEyParticipant> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEyParticipant>>,
+  TError,
+  { data: BodyType<CreateEyParticipant> },
+  TContext
+> => {
+  const mutationKey = ["createEyParticipant"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEyParticipant>>,
+    { data: BodyType<CreateEyParticipant> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createEyParticipant(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEyParticipantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEyParticipant>>
+>;
+export type CreateEyParticipantMutationBody = BodyType<CreateEyParticipant>;
+export type CreateEyParticipantMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Register an Excellent Youth participant
+ */
+export const useCreateEyParticipant = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEyParticipant>>,
+    TError,
+    { data: BodyType<CreateEyParticipant> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createEyParticipant>>,
+  TError,
+  { data: BodyType<CreateEyParticipant> },
+  TContext
+> => {
+  return useMutation(getCreateEyParticipantMutationOptions(options));
+};
+
+/**
+ * @summary Update an EY participant (admin only)
+ */
+export const getUpdateEyParticipantUrl = (id: number) => {
+  return `/api/ey-participants/${id}`;
+};
+
+export const updateEyParticipant = async (
+  id: number,
+  updateEyParticipant: UpdateEyParticipant,
+  options?: RequestInit,
+): Promise<EyParticipant> => {
+  return customFetch<EyParticipant>(getUpdateEyParticipantUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateEyParticipant),
+  });
+};
+
+export const getUpdateEyParticipantMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEyParticipant>>,
+    TError,
+    { id: number; data: BodyType<UpdateEyParticipant> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEyParticipant>>,
+  TError,
+  { id: number; data: BodyType<UpdateEyParticipant> },
+  TContext
+> => {
+  const mutationKey = ["updateEyParticipant"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEyParticipant>>,
+    { id: number; data: BodyType<UpdateEyParticipant> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateEyParticipant(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEyParticipantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEyParticipant>>
+>;
+export type UpdateEyParticipantMutationBody = BodyType<UpdateEyParticipant>;
+export type UpdateEyParticipantMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update an EY participant (admin only)
+ */
+export const useUpdateEyParticipant = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEyParticipant>>,
+    TError,
+    { id: number; data: BodyType<UpdateEyParticipant> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateEyParticipant>>,
+  TError,
+  { id: number; data: BodyType<UpdateEyParticipant> },
+  TContext
+> => {
+  return useMutation(getUpdateEyParticipantMutationOptions(options));
+};
+
+/**
+ * @summary Delete an EY participant (admin only)
+ */
+export const getDeleteEyParticipantUrl = (id: number) => {
+  return `/api/ey-participants/${id}`;
+};
+
+export const deleteEyParticipant = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteEyParticipantUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteEyParticipantMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEyParticipant>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteEyParticipant>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteEyParticipant"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteEyParticipant>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteEyParticipant(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteEyParticipantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteEyParticipant>>
+>;
+
+export type DeleteEyParticipantMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete an EY participant (admin only)
+ */
+export const useDeleteEyParticipant = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEyParticipant>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteEyParticipant>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteEyParticipantMutationOptions(options));
+};
+
+/**
+ * @summary List all Excellent Youth coordinators
+ */
+export const getListEyCoordinatorsUrl = () => {
+  return `/api/ey-coordinators`;
+};
+
+export const listEyCoordinators = async (
+  options?: RequestInit,
+): Promise<EyCoordinator[]> => {
+  return customFetch<EyCoordinator[]>(getListEyCoordinatorsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListEyCoordinatorsQueryKey = () => {
+  return [`/api/ey-coordinators`] as const;
+};
+
+export const getListEyCoordinatorsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEyCoordinators>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEyCoordinators>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListEyCoordinatorsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listEyCoordinators>>
+  > = ({ signal }) => listEyCoordinators({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEyCoordinators>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListEyCoordinatorsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEyCoordinators>>
+>;
+export type ListEyCoordinatorsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all Excellent Youth coordinators
+ */
+
+export function useListEyCoordinators<
+  TData = Awaited<ReturnType<typeof listEyCoordinators>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEyCoordinators>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListEyCoordinatorsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create an Excellent Youth coordinator (admin only)
+ */
+export const getCreateEyCoordinatorUrl = () => {
+  return `/api/ey-coordinators`;
+};
+
+export const createEyCoordinator = async (
+  createEyCoordinator: CreateEyCoordinator,
+  options?: RequestInit,
+): Promise<EyCoordinator> => {
+  return customFetch<EyCoordinator>(getCreateEyCoordinatorUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createEyCoordinator),
+  });
+};
+
+export const getCreateEyCoordinatorMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEyCoordinator>>,
+    TError,
+    { data: BodyType<CreateEyCoordinator> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEyCoordinator>>,
+  TError,
+  { data: BodyType<CreateEyCoordinator> },
+  TContext
+> => {
+  const mutationKey = ["createEyCoordinator"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEyCoordinator>>,
+    { data: BodyType<CreateEyCoordinator> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createEyCoordinator(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEyCoordinatorMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEyCoordinator>>
+>;
+export type CreateEyCoordinatorMutationBody = BodyType<CreateEyCoordinator>;
+export type CreateEyCoordinatorMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create an Excellent Youth coordinator (admin only)
+ */
+export const useCreateEyCoordinator = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEyCoordinator>>,
+    TError,
+    { data: BodyType<CreateEyCoordinator> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createEyCoordinator>>,
+  TError,
+  { data: BodyType<CreateEyCoordinator> },
+  TContext
+> => {
+  return useMutation(getCreateEyCoordinatorMutationOptions(options));
+};
+
+/**
+ * @summary Update an EY coordinator (admin only)
+ */
+export const getUpdateEyCoordinatorUrl = (id: number) => {
+  return `/api/ey-coordinators/${id}`;
+};
+
+export const updateEyCoordinator = async (
+  id: number,
+  createEyCoordinator: CreateEyCoordinator,
+  options?: RequestInit,
+): Promise<EyCoordinator> => {
+  return customFetch<EyCoordinator>(getUpdateEyCoordinatorUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createEyCoordinator),
+  });
+};
+
+export const getUpdateEyCoordinatorMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEyCoordinator>>,
+    TError,
+    { id: number; data: BodyType<CreateEyCoordinator> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEyCoordinator>>,
+  TError,
+  { id: number; data: BodyType<CreateEyCoordinator> },
+  TContext
+> => {
+  const mutationKey = ["updateEyCoordinator"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEyCoordinator>>,
+    { id: number; data: BodyType<CreateEyCoordinator> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateEyCoordinator(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEyCoordinatorMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEyCoordinator>>
+>;
+export type UpdateEyCoordinatorMutationBody = BodyType<CreateEyCoordinator>;
+export type UpdateEyCoordinatorMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update an EY coordinator (admin only)
+ */
+export const useUpdateEyCoordinator = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEyCoordinator>>,
+    TError,
+    { id: number; data: BodyType<CreateEyCoordinator> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateEyCoordinator>>,
+  TError,
+  { id: number; data: BodyType<CreateEyCoordinator> },
+  TContext
+> => {
+  return useMutation(getUpdateEyCoordinatorMutationOptions(options));
+};
+
+/**
+ * @summary Delete an EY coordinator (admin only)
+ */
+export const getDeleteEyCoordinatorUrl = (id: number) => {
+  return `/api/ey-coordinators/${id}`;
+};
+
+export const deleteEyCoordinator = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteEyCoordinatorUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteEyCoordinatorMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEyCoordinator>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteEyCoordinator>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteEyCoordinator"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteEyCoordinator>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteEyCoordinator(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteEyCoordinatorMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteEyCoordinator>>
+>;
+
+export type DeleteEyCoordinatorMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete an EY coordinator (admin only)
+ */
+export const useDeleteEyCoordinator = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEyCoordinator>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteEyCoordinator>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteEyCoordinatorMutationOptions(options));
+};

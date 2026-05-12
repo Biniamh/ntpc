@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { useLanguage } from "@/lib/language-provider";
 import { Facebook, Youtube, Instagram, MapPin, Phone, Mail } from "lucide-react";
-import logoUrl from "@assets/photo_1_2026-05-03_16-37-24_1777851536098.jpg";
+import logoUrl from "@assets/logo.jpg";
 
 export function Footer() {
   const { t } = useLanguage();

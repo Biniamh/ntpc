@@ -4,3 +4,7 @@ export * from "./posts";
 export * from "./events";
 export * from "./scripture";
 export * from "./departments";
+export * from "./ey-events";
+export * from "./ey-rounds";
+export * from "./ey-participants";
+export * from "./ey-coordinators";

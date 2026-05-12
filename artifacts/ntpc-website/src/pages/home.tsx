@@ -6,8 +6,15 @@ import { Calendar, ArrowRight, BookOpen, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
 import heroBg from "@assets/photo_3_2026-05-03_16-37-24_1777851536098.jpg";
+import ntpcBanner from "@assets/ntpcbanner.jpg";
+import youthCamp1 from "@assets/home1.jpg";
+import youthCamp2 from "@assets/home2.jpg";
+import youthCamp3 from "@assets/home3.jpg";
+import youthCamp4 from "@assets/home4.jpg";
 
 export default function Home() {
   const { t, language } = useLanguage();
@@ -17,38 +24,125 @@ export default function Home() {
   const recentPosts = posts.slice(0, 3);
   const upcomingEvents = events.slice(0, 3);
 
+  // Background image carousel
+  const backgroundImages = [ntpcBanner, youthCamp1, youthCamp2, youthCamp3, youthCamp4];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
+    }, 5000); // Change image every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [backgroundImages.length]);
+
   return (
     <div className="w-full">
       {/* Hero Section */}
       <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroBg} alt="Church Congregation" className="w-full h-full object-cover" />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentImageIndex}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              <img
+                src={backgroundImages[currentImageIndex]}
+                alt="Church Community"
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          </AnimatePresence>
           <div className="absolute inset-0 bg-black/60 bg-gradient-to-t from-black/80 to-transparent"></div>
+          
+          {/* Floating animation elements */}
+          <motion.div
+            animate={{
+              y: [0, -20, 0],
+              rotate: [0, 5, -5, 0],
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="absolute top-20 left-20 w-16 h-16 bg-white/10 rounded-full backdrop-blur-sm hidden lg:block"
+          />
+          <motion.div
+            animate={{
+              y: [0, 20, 0],
+              x: [0, -10, 0],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
+            className="absolute bottom-32 right-32 w-12 h-12 bg-primary/20 rounded-full backdrop-blur-sm hidden lg:block"
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2,
+            }}
+            className="absolute top-1/2 left-1/4 w-8 h-8 bg-white/20 rounded-full backdrop-blur-sm hidden lg:block"
+          />
         </div>
         
         <div className="relative z-10 container px-4 text-center text-white">
-          <div className="inline-block mb-6 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="inline-block mb-6 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm"
+          >
             <span className="text-sm font-medium tracking-wider uppercase">Welcome to NTPC</span>
-          </div>
+          </motion.div>
           
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/70 animate-in fade-in zoom-in-95 duration-1000 delay-150">
+          <motion.h1
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/70"
+          >
             {language === 'am' ? t.hero.slogan : "ለኔ ህይወት ክርስቶስ ነዉ!"}
-          </h1>
+          </motion.h1>
           
           {language === 'en' && (
-            <p className="text-xl md:text-2xl font-serif text-white/80 mb-10 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="text-xl md:text-2xl font-serif text-white/80 mb-10 max-w-2xl mx-auto"
+            >
               For me to live is Christ!
-            </p>
+            </motion.p>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+          >
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 py-6 text-lg h-auto shadow-[0_0_40px_-10px_rgba(107,33,168,0.5)]">
               <Link href="/join">{t.hero.join_us}</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20 rounded-full px-8 py-6 text-lg h-auto backdrop-blur-md">
               <Link href="/support">{t.hero.support}</Link>
             </Button>
-          </div>
+          </motion.div>
         </div>
       </section>
 

@@ -1,7 +1,7 @@
 import { useLanguage } from "@/lib/language-provider";
-import visionaryPhoto from "@assets/photo_2_2026-05-03_16-37-24_1777851536098.jpg";
-import ntpcbanner from "@/assets/ntpcbanner.jpg";
-import congregationPhoto from "@assets/photo_3_2026-05-03_16-37-24_1777851536098.jpg";
+import visionaryPhoto from "@/assets/visionaryPhoto.jpg";
+import ntpcbanner from "@/assets/channels4_banner.jpg";
+import congregationPhoto from "@/assets/aboutPhoto.jpg";
 
 export default function About() {
   const { language } = useLanguage();
@@ -137,7 +137,7 @@ export default function About() {
       <section className="py-20 bg-card">
         <div className="container px-4 mx-auto max-w-5xl">
           <h2 className="text-3xl font-serif font-bold text-center mb-16">
-            {language === "am" ? "ስለ ቤተ ክርስቲያናችን ራዕያዊ" : "Our Visionary"}
+            {language === "am" ? "ስለ ቤተ ክርስቲያናችን ባለራዕይ" : "Our Visionary"}
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
@@ -152,7 +152,7 @@ export default function About() {
             <div>
               <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4">
                 {language === "am"
-                  ? "ፓስተር / ሊቀ ጳጳስ"
+                  ? "መሪ አገልጋይ / ባለራዕይ"
                   : "Founding Pastor / Visionary"}
               </div>
               <h3 className="text-3xl font-serif font-bold mb-2">
@@ -182,7 +182,7 @@ export default function About() {
                     label: language === "am" ? "አባላት" : "Members",
                   },
                   {
-                    num: "7",
+                    num: "23",
                     label: language === "am" ? "ክፍሎች" : "Departments",
                   },
                 ].map((stat, i) => (

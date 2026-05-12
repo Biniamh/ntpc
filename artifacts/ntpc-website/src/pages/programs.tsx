@@ -1,6 +1,6 @@
 import { useLanguage } from "@/lib/language-provider";
-import congregationPhoto from "@assets/photo_3_2026-05-03_16-37-24_1777851536098.jpg";
-import buildingPhoto from "@assets/photo_4_2026-05-03_16-37-24_1777851536098.jpg";
+import congregationPhoto from "@assets/view2.jpg";
+import buildingPhoto from "@assets/view.jpg";
 
 export default function Programs() {
   const { language } = useLanguage();
@@ -8,7 +8,7 @@ export default function Programs() {
   const programs = [
     {
       day: language === 'am' ? 'አርብ' : 'Friday',
-      time: language === 'am' ? 'ከጠዋቱ 10:00 (ሀበሻ ሰዓት)' : '10:00 AM (Local Ethiopian Time)',
+      time: language === 'am' ? 'ከምሽቱ 10:00 ' : '10:00 AM (Local Ethiopian Time)',
       title: language === 'am' ? 'ሳምንታዊ የቃሉ ጥናትና አምልኮ' : 'Weekly Bible Study & Worship',
       description: language === 'am'
         ? 'ጥልቅ የቃሉ ጥናት፣ የጸሎት ሰዓትና አምልኮ። ሁሉም አቅምና እድሜ ያላቸው ምዕምናን ይሳተፋሉ። ይህ ፕሮግራም ሳምንቱን ሙሉ ለቀጣዩ ሳምንት ያዘጋጃል።'
@@ -24,7 +24,7 @@ export default function Programs() {
     },
     {
       day: language === 'am' ? 'እሁድ' : 'Sunday',
-      time: language === 'am' ? 'ከሰዓት 3:00 (ሀበሻ ሰዓት)' : '3:00 PM (Local Ethiopian Time)',
+      time: language === 'am' ? 'ከጠዋት 3:00' : '3:00 PM (Local Ethiopian Time)',
       title: language === 'am' ? 'የዋናው አምልኮ ፕሮግራም' : 'Main Sunday Service',
       description: language === 'am'
         ? 'ድምቅ የሆነ ዋናው አምልኮ ፕሮግራም — ፓስተሩ ቃሉን ሲሰብኩ፣ NTPC መዘምራን፣ ልዩ የተጋበዙ ዘማሪዎችና ሌሎች ፕሮግራሞች። ቤተ ክርስቲያናችን ይህ ሳምንቱ ዋናው ስብሰባ ነው።'
@@ -48,7 +48,7 @@ export default function Programs() {
         <div className="absolute inset-0 bg-black/65" />
         <div className="relative z-10 text-center text-white px-4">
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-3">
-            {language === 'am' ? 'ዘወትራዊ ፕሮግራሞቻችን' : 'Our Regular Programs'}
+            {language === 'am' ? 'መደበኛ ፕሮግራሞቻችን' : 'Our Regular Programs'}
           </h1>
           <p className="text-white/75 text-lg">Ethiopian New Testament Priests Church</p>
         </div>
@@ -96,7 +96,7 @@ export default function Programs() {
       <section className="py-16 bg-primary text-primary-foreground text-center">
         <div className="container px-4 mx-auto">
           <h2 className="text-3xl font-serif font-bold mb-4">
-            {language === 'am' ? 'ጋርጂ፣ አዲስ አበባ' : 'Gerji, Addis Ababa, Ethiopia'}
+            {language === 'am' ? 'ገርጂ አዲስ አበባ' : 'Gerji, Addis Ababa, Ethiopia'}
           </h2>
           <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto">
             {language === 'am'

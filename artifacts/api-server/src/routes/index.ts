@@ -7,6 +7,10 @@ import postsRouter from "./posts";
 import eventsRouter from "./events";
 import scriptureRouter from "./scripture";
 import departmentsRouter from "./departments";
+import eyEventsRouter from "./ey-events";
+import eyRoundsRouter from "./ey-rounds";
+import eyParticipantsRouter from "./ey-participants";
+import eyCoordinatorsRouter from "./ey-coordinators";
 
 const router: IRouter = Router();
 
@@ -18,5 +22,9 @@ router.use(postsRouter);
 router.use(eventsRouter);
 router.use(scriptureRouter);
 router.use(departmentsRouter);
+router.use(eyEventsRouter);
+router.use(eyRoundsRouter);
+router.use(eyParticipantsRouter);
+router.use(eyCoordinatorsRouter);
 
 export default router;

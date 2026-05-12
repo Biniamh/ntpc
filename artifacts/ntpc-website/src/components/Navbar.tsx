@@ -4,7 +4,7 @@ import { Menu, X, Moon, Sun, Globe } from "lucide-react";
 import { useTheme } from "@/lib/theme-provider";
 import { useLanguage } from "@/lib/language-provider";
 import { Button } from "@/components/ui/button";
-import logoUrl from "@assets/photo_1_2026-05-03_16-37-24_1777851536098.jpg";
+import logoUrl from "@assets/logo.jpg";
 
 export function Navbar() {
   const [location] = useLocation();

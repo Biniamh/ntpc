@@ -144,6 +144,31 @@ export const GetPostResponse = zod.object({
 });
 
 /**
+ * @summary Update a post (admin only)
+ */
+export const UpdatePostParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePostBody = zod.object({
+  title: zod.string(),
+  highlights: zod.string(),
+  photoUrl: zod.string().optional(),
+  facebookUrl: zod.string().optional(),
+  youtubeUrl: zod.string().optional(),
+});
+
+export const UpdatePostResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  highlights: zod.string(),
+  photoUrl: zod.string().optional(),
+  facebookUrl: zod.string().optional(),
+  youtubeUrl: zod.string().optional(),
+  createdAt: zod.string(),
+});
+
+/**
  * @summary Delete a post (admin only)
  */
 export const DeletePostParams = zod.object({
@@ -171,6 +196,29 @@ export const CreateEventBody = zod.object({
   description: zod.string(),
   date: zod.string(),
   imageUrl: zod.string().optional(),
+});
+
+/**
+ * @summary Update an event (admin only)
+ */
+export const UpdateEventParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateEventBody = zod.object({
+  title: zod.string(),
+  description: zod.string(),
+  date: zod.string(),
+  imageUrl: zod.string().optional(),
+});
+
+export const UpdateEventResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  date: zod.string(),
+  imageUrl: zod.string().optional(),
+  createdAt: zod.string(),
 });
 
 /**
@@ -227,4 +275,309 @@ export const GetDepartmentResponse = zod.object({
   members: zod.array(zod.string()).optional(),
   activities: zod.string().optional(),
   meetingTime: zod.string().optional(),
+});
+
+/**
+ * @summary List all Excellent Youth events
+ */
+export const ListEyEventsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  date: zod.string(),
+  imageUrl: zod.string().optional(),
+  type: zod.string(),
+  year: zod.number(),
+  createdAt: zod.string(),
+});
+export const ListEyEventsResponse = zod.array(ListEyEventsResponseItem);
+
+/**
+ * @summary Create an Excellent Youth event (admin only)
+ */
+export const CreateEyEventBody = zod.object({
+  title: zod.string(),
+  description: zod.string(),
+  date: zod.string(),
+  imageUrl: zod.string().optional(),
+  type: zod.string(),
+  year: zod.number(),
+});
+
+/**
+ * @summary Get a single EY event
+ */
+export const GetEyEventParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetEyEventResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  date: zod.string(),
+  imageUrl: zod.string().optional(),
+  type: zod.string(),
+  year: zod.number(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Update an EY event (admin only)
+ */
+export const UpdateEyEventParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateEyEventBody = zod.object({
+  title: zod.string(),
+  description: zod.string(),
+  date: zod.string(),
+  imageUrl: zod.string().optional(),
+  type: zod.string(),
+  year: zod.number(),
+});
+
+export const UpdateEyEventResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  date: zod.string(),
+  imageUrl: zod.string().optional(),
+  type: zod.string(),
+  year: zod.number(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete an EY event (admin only)
+ */
+export const DeleteEyEventParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all Excellent Youth rounds
+ */
+export const ListEyRoundsResponseItem = zod.object({
+  id: zod.number(),
+  eventId: zod.number(),
+  roundNumber: zod.number(),
+  capacity: zod.number(),
+  fromDate: zod.string().optional(),
+  toDate: zod.string().optional(),
+  createdAt: zod.string(),
+});
+export const ListEyRoundsResponse = zod.array(ListEyRoundsResponseItem);
+
+/**
+ * @summary Create an Excellent Youth round (admin only)
+ */
+export const CreateEyRoundBody = zod.object({
+  eventId: zod.number(),
+  roundNumber: zod.number(),
+  capacity: zod.number(),
+  fromDate: zod.string(),
+  toDate: zod.string(),
+});
+
+/**
+ * @summary Update an EY round (admin only)
+ */
+export const UpdateEyRoundParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateEyRoundBody = zod.object({
+  eventId: zod.number(),
+  roundNumber: zod.number(),
+  capacity: zod.number(),
+  fromDate: zod.string().optional(),
+  toDate: zod.string().optional(),
+});
+
+export const UpdateEyRoundResponse = zod.object({
+  id: zod.number(),
+  eventId: zod.number(),
+  roundNumber: zod.number(),
+  capacity: zod.number(),
+  fromDate: zod.string().optional(),
+  toDate: zod.string().optional(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete an EY round (admin only)
+ */
+export const DeleteEyRoundParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all Excellent Youth participants
+ */
+export const ListEyParticipantsResponseItem = zod.object({
+  id: zod.number(),
+  faydaId: zod.string(),
+  firstName: zod.string(),
+  middleName: zod.string().optional(),
+  lastName: zod.string(),
+  city: zod.string(),
+  phoneNumber: zod.string(),
+  email: zod.string(),
+  faydaVerified: zod.boolean(),
+  eventId: zod.number(),
+  roundId: zod.number(),
+  paymentStatus: zod.boolean(),
+  registrationNumber: zod.string(),
+  coordinatorId: zod.number().optional(),
+  badgeGenerated: zod.boolean().optional(),
+  event: zod.object({
+    id: zod.number(),
+    title: zod.string(),
+    description: zod.string(),
+    date: zod.string(),
+    imageUrl: zod.string().optional(),
+    type: zod.string(),
+    year: zod.number(),
+    createdAt: zod.string(),
+  }).optional(),
+  round: zod.object({
+    id: zod.number(),
+    eventId: zod.number(),
+    roundNumber: zod.number(),
+    capacity: zod.number(),
+    fromDate: zod.string().optional(),
+    toDate: zod.string().optional(),
+    createdAt: zod.string(),
+  }).optional(),
+  coordinator: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    phone: zod.string(),
+    email: zod.string(),
+    createdAt: zod.string(),
+  }).optional(),
+  createdAt: zod.string(),
+});
+export const ListEyParticipantsResponse = zod.array(
+  ListEyParticipantsResponseItem,
+);
+
+/**
+ * @summary Register an Excellent Youth participant
+ */
+export const CreateEyParticipantBody = zod.object({
+  faydaId: zod.string(),
+  firstName: zod.string(),
+  middleName: zod.string().optional(),
+  lastName: zod.string(),
+  city: zod.string(),
+  phoneNumber: zod.string(),
+  email: zod.string(),
+  eventId: zod.number(),
+  roundId: zod.number(),
+  paymentMethod: zod.enum(["bank", "telebirr"]),
+  bankReference: zod.string().optional(),
+  paymentSlip: zod.string().optional(),
+});
+
+/**
+ * @summary Update an EY participant (admin only)
+ */
+export const UpdateEyParticipantParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateEyParticipantBody = zod.object({
+  faydaId: zod.string().optional(),
+  firstName: zod.string().optional(),
+  middleName: zod.string().optional(),
+  lastName: zod.string().optional(),
+  city: zod.string().optional(),
+  phoneNumber: zod.string().optional(),
+  email: zod.string().optional(),
+  faydaVerified: zod.boolean().optional(),
+  eventId: zod.number().optional(),
+  roundId: zod.number().optional(),
+  paymentStatus: zod.boolean().optional(),
+  registrationNumber: zod.string().optional(),
+  coordinatorId: zod.number().optional(),
+});
+
+export const UpdateEyParticipantResponse = zod.object({
+  id: zod.number(),
+  faydaId: zod.string(),
+  firstName: zod.string(),
+  middleName: zod.string().optional(),
+  lastName: zod.string(),
+  city: zod.string(),
+  phoneNumber: zod.string(),
+  email: zod.string(),
+  faydaVerified: zod.boolean(),
+  eventId: zod.number(),
+  roundId: zod.number(),
+  paymentStatus: zod.boolean(),
+  registrationNumber: zod.string(),
+  coordinatorId: zod.number().optional(),
+  badgeGenerated: zod.boolean().optional(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete an EY participant (admin only)
+ */
+export const DeleteEyParticipantParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all Excellent Youth coordinators
+ */
+export const ListEyCoordinatorsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  phone: zod.string(),
+  email: zod.string(),
+  createdAt: zod.string(),
+});
+export const ListEyCoordinatorsResponse = zod.array(
+  ListEyCoordinatorsResponseItem,
+);
+
+/**
+ * @summary Create an Excellent Youth coordinator (admin only)
+ */
+export const CreateEyCoordinatorBody = zod.object({
+  name: zod.string(),
+  phone: zod.string(),
+  email: zod.string(),
+});
+
+/**
+ * @summary Update an EY coordinator (admin only)
+ */
+export const UpdateEyCoordinatorParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateEyCoordinatorBody = zod.object({
+  name: zod.string(),
+  phone: zod.string(),
+  email: zod.string(),
+});
+
+export const UpdateEyCoordinatorResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  phone: zod.string(),
+  email: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete an EY coordinator (admin only)
+ */
+export const DeleteEyCoordinatorParams = zod.object({
+  id: zod.coerce.number(),
 });

@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HeartHandshake } from "lucide-react";
-import congregationPhoto from "@assets/photo_3_2026-05-03_16-37-24_1777851536098.jpg";
+import congregationPhoto from "@assets/youth-camp-4.png";
 
 const schema = z.object({
   firstName: z.string().min(1, "First name required"),

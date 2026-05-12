@@ -142,3 +142,108 @@ export interface Department {
   activities?: string;
   meetingTime?: string;
 }
+
+export interface EyEvent {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  imageUrl?: string;
+  type: string;
+  year: number;
+  createdAt: string;
+}
+
+export interface CreateEyEvent {
+  title: string;
+  description: string;
+  date: string;
+  imageUrl?: string;
+  type: string;
+  year: number;
+}
+
+export interface EyRound {
+  id: number;
+  eventId: number;
+  roundNumber: number;
+  capacity: number;
+  createdAt: string;
+}
+
+export interface CreateEyRound {
+  eventId: number;
+  roundNumber: number;
+  capacity: number;
+}
+
+export interface EyParticipant {
+  id: number;
+  faydaId: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  city: string;
+  phoneNumber: string;
+  email: string;
+  faydaVerified: boolean;
+  eventId: number;
+  roundId: number;
+  paymentStatus: boolean;
+  registrationNumber: string;
+  coordinatorId: number;
+  createdAt: string;
+}
+
+export type CreateEyParticipantPaymentMethod =
+  (typeof CreateEyParticipantPaymentMethod)[keyof typeof CreateEyParticipantPaymentMethod];
+
+export const CreateEyParticipantPaymentMethod = {
+  bank: "bank",
+  telebirr: "telebirr",
+} as const;
+
+export interface CreateEyParticipant {
+  faydaId: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  city: string;
+  phoneNumber: string;
+  email: string;
+  eventId: number;
+  roundId: number;
+  paymentMethod: CreateEyParticipantPaymentMethod;
+  bankReference?: string;
+  paymentSlip?: string;
+}
+
+export interface UpdateEyParticipant {
+  faydaId?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  city?: string;
+  phoneNumber?: string;
+  email?: string;
+  faydaVerified?: boolean;
+  eventId?: number;
+  roundId?: number;
+  paymentStatus?: boolean;
+  registrationNumber?: string;
+  coordinatorId?: number;
+}
+
+export interface EyCoordinator {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  createdAt: string;
+}
+
+export interface CreateEyCoordinator {
+  name: string;
+  phone: string;
+  email: string;
+}

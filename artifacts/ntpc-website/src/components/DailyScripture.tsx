@@ -13,6 +13,7 @@ export function DailyScripture() {
       const timer = setTimeout(() => setIsVisible(true), 2000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [scripture]);
 
   if (!scripture || !isVisible) return null;

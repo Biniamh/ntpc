@@ -41,7 +41,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold mb-1">{language === 'am' ? 'አድራሻ' : 'Location'}</h3>
                   <p className="text-muted-foreground">Gerji, Addis Ababa, Ethiopia</p>
-                  <p className="text-muted-foreground text-sm">ጋርጂ ክፍለ ከተማ፣ አዲስ አበባ</p>
+                  <p className="text-muted-foreground text-sm">ገርጂ፣ አዲስ አበባ</p>
                 </div>
               </div>
 
@@ -117,7 +117,7 @@ export default function Contact() {
               />
             </div>
             <p className="text-sm text-muted-foreground mt-3 text-center">
-              {language === 'am' ? 'ጋርጂ ክፍለ ከተማ፣ አዲስ አበባ፣ ኢትዮጵያ' : 'Gerji, Addis Ababa, Ethiopia'}
+              {language === 'am' ? 'ገርጂ፣ አዲስ አበባ፣ ኢትዮጵያ' : 'Gerji, Addis Ababa, Ethiopia'}
             </p>
           </div>
         </div>
