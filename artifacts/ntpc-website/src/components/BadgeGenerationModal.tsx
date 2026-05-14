@@ -33,7 +33,9 @@ export function BadgeGenerationModal({
 
   if (!participant) return null;
 
-  const participantName = `${participant.firstName} ${participant.middleName ? participant.lastName + " " : ""}${participant.lastName}`;
+  const participantName = participant.middleName
+    ? `${participant.firstName} ${participant.middleName} ${participant.lastName}`
+    : `${participant.firstName} ${participant.lastName}`;
 
   const handlePrint = () => {
     setIsPrinting(true);
@@ -51,63 +53,62 @@ export function BadgeGenerationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto badge-dialog">
         <DialogHeader>
           <DialogTitle>Generate Event Badge</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Badge Preview */}
-          <div className="flex justify-center py-6 bg-gray-50 rounded-lg print:bg-white">
-            <div className="w-96 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden print:shadow-none">
+          <div className="flex justify-center py-3 bg-gray-50 rounded-lg print:bg-white badge-print-area">
+            <div className="max-w-[min(95vw,42rem)] bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 rounded-2xl shadow-2xl p-4 text-white relative overflow-hidden print:shadow-none">
               {/* Top accent bar */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300"></div>
 
               {/* Watermark */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-15">
-                <img src={excellentYouthImage} alt="Excellent Youth watermark" className="h-72 w-72 object-contain opacity-20" />
+              <div className="absolute inset-0 pointer-events-none opacity-20">
+                <img src={excellentYouthImage} alt="Excellent Youth watermark" className="absolute inset-0 h-full w-full object-cover opacity-15 transform scale-110" />
               </div>
 
-              <div className="relative z-10 space-y-6">
+              <div className="relative z-10 space-y-2">
                 {/* Header with Logo */}
-                <div className="text-center border-b border-white/20 pb-4">
-                  <div className="flex justify-center mb-3">
-                    <div className="bg-white/10 rounded-full p-3 border-2 border-white/30">
-                      <img src={excellentYouthImage} alt="Excellent Youth logo" className="h-10 w-10 rounded-full object-cover" />
+                <div className="text-center border-b border-white/20 pb-2">
+                  <div className="flex justify-center mb-2">
+                    <div className="bg-white/15 rounded-full p-4 border-2 border-white/30">
+                      <img src={excellentYouthImage} alt="Excellent Youth logo" className="h-20 w-20 rounded-full object-cover" />
                     </div>
                   </div>
-                  <h2 className="text-xl font-bold">መልካም ወጣት</h2>
-                  <p className="text-sm text-blue-200">Excellent Youth Program</p>
+                  <h2 className="text-lg font-bold">መልካም ወጣት</h2>
+                  <p className="text-xs text-blue-200">Excellent Youth Program</p>
                 </div>
 
                 {/* Event Information */}
                 <div className="text-center">
-                  <h3 className="text-2xl font-bold mb-2">{event?.title || "Event"}</h3>
-                  <div className="inline-block bg-white/10 px-4 py-1 rounded-full text-sm border border-white/20">
+                  <h3 className="text-xl font-bold mb-1">{event?.title || "Event"}</h3>
+                  <div className="inline-block bg-white/10 px-3 py-1 rounded-full text-xs border border-white/20">
                     ዙር {round?.roundNumber || "-"}
                   </div>
                 </div>
 
                 {/* Participant Information */}
-                <div className="space-y-4 border-t border-b border-white/20 py-4">
+                <div className="space-y-3 border-t border-b border-white/20 py-3">
                   <div className="text-center">
-                    <p className="text-sm text-blue-200 mb-1">የተሳታፊ ሙሉ ስም</p>
-                    <p className="text-2xl font-bold">{participantName}</p>
+                    <p className="text-xs text-blue-200 mb-1">የተሳታፊ ሙሉ ስም</p>
+                    <p className="text-xl font-bold">{participantName}</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                  
+                  <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <p className="text-blue-200 text-xs font-semibold">REG #</p>
-                      <p className="font-mono font-bold text-base">{participant.registrationNumber}</p>
+                      <p className="text-blue-200 text-[11px] font-semibold">REG #</p>
+                      <p className="font-mono font-bold text-sm">{participant.registrationNumber}</p>
                     </div>
                     <div>
-                      <p className="text-blue-200 text-xs font-semibold">CITY</p>
+                      <p className="text-blue-200 text-[11px] font-semibold">CITY</p>
                       <p className="font-bold text-sm">{participant.city || "N/A"}</p>
                     </div>
-                    <div>
-                      <p className="text-blue-200 text-xs font-semibold">EMAIL</p>
-                      <p className="font-bold text-xs truncate">{participant.email}</p>
+                    <div className="col-span-2">
+                      <p className="text-blue-200 text-[11px] font-semibold">EMAIL</p>
+                      <p className="font-bold text-sm truncate">{participant.email}</p>
                     </div>
                   </div>
 
@@ -126,11 +127,11 @@ export function BadgeGenerationModal({
                 </div>
 
                 {/* Footer */}
-                <div className="text-center border-t border-white/20 pt-4">
-                  <div className="bg-white/10 p-2 rounded mb-2 border border-white/20 font-mono text-sm tracking-widest font-bold">
+                <div className="text-center border-t border-white/20 pt-3">
+                  <div className="bg-white/10 p-2 rounded mb-2 border border-white/20 font-mono text-xs tracking-widest font-bold">
                     {participant.registrationNumber}
                   </div>
-                  <p className="text-xs text-blue-200 italic">Please wear this badge throughout the event</p>
+                  <p className="text-[11px] text-blue-200 italic">Please wear this badge throughout the event</p>
                 </div>
               </div>
             </div>
@@ -199,14 +200,29 @@ export function BadgeGenerationModal({
             padding: 0;
             background: white;
           }
-          [role="dialog"] {
-            position: static;
-            border: none;
-            box-shadow: none;
-            max-height: none;
-            max-width: none;
+          [role="dialog"], .badge-dialog, .badge-print-area {
+            position: static !important;
+            border: none !important;
+            box-shadow: none !important;
+            max-height: none !important;
+            max-width: none !important;
+            overflow: visible !important;
           }
-          .print\\:hidden {
+          body * {
+            visibility: hidden;
+          }
+          .badge-dialog,
+          .badge-dialog *,
+          .badge-print-area,
+          .badge-print-area * {
+            visibility: visible;
+          }
+          .badge-print-area {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+          }          .print\\:hidden {
             display: none !important;
           }
           .print\\:bg-white {
