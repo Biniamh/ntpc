@@ -18,12 +18,24 @@ interface Column<T> {
   searchable?: boolean;
 }
 
+interface SearchByOption {
+  value: string;
+  label: string;
+}
+
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
   searchPlaceholder?: string;
+  searchByLabel?: string;
+  searchByOptions?: SearchByOption[];
+  searchBy?: string;
+  searchByValue?: Record<string, string>;
+  onSearchByChange?: (value: string) => void;
+  onSearchByValueChange?: (values: Record<string, string>) => void;
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
+  onGenerateBadge?: (item: T) => void;
   loading?: boolean;
   exportable?: boolean;
   exportFileName?: string;
@@ -34,8 +46,15 @@ export function DataTable<T extends { id: number | string }>({
   data,
   columns,
   searchPlaceholder = "Search...",
+  searchByLabel = "Search by",
+  searchByOptions,
+  searchBy,
+  searchByValue = {},
+  onSearchByChange,
+  onSearchByValueChange,
   onEdit,
   onDelete,
+  onGenerateBadge,
   loading = false,
   exportable = true,
   exportFileName = "data",
@@ -46,15 +65,55 @@ export function DataTable<T extends { id: number | string }>({
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
+  // Get unique values for searchable fields
+  const getUniqueValues = (fieldKey: string): string[] => {
+    const values = data
+      .map((item: any) => {
+        const value = item[fieldKey];
+        if (typeof value === "boolean") {
+          return value ? "yes" : "no";
+        }
+        return value?.toString() || "";
+      })
+      .filter((v: string) => v !== "");
+    return [...new Set(values)].sort();
+  };
+
   // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
-    let filtered = data.filter((item) =>
-      columns.some((column) => {
+    let filtered = data;
+
+    // Apply searchByValue filter if provided
+    if (searchByOptions && searchBy && searchBy !== "all" && searchByValue && searchByValue[searchBy]) {
+      const filterValue = searchByValue[searchBy].toLowerCase();
+      filtered = filtered.filter((item) => {
+        const value = item[searchBy as keyof T];
+        const normalized =
+          typeof value === "boolean"
+            ? value
+              ? "yes"
+              : "no"
+            : value?.toString() ?? "";
+        return normalized.toLowerCase().includes(filterValue);
+      });
+    }
+
+    const trimmedSearch = searchTerm.trim().toLowerCase();
+    filtered = filtered.filter((item) => {
+      if (!trimmedSearch) return true;
+
+      return columns.some((column) => {
         if (!column.searchable) return false;
         const value = item[column.key as keyof T];
-        return value?.toString().toLowerCase().includes(searchTerm.toLowerCase());
-      })
-    );
+        const normalized =
+          typeof value === "boolean"
+            ? value
+              ? "yes"
+              : "no"
+            : value?.toString() ?? "";
+        return normalized.toLowerCase().includes(trimmedSearch);
+      });
+    });
 
     if (sortColumn) {
       filtered = filtered.sort((a, b) => {
@@ -68,7 +127,7 @@ export function DataTable<T extends { id: number | string }>({
     }
 
     return filtered;
-  }, [data, searchTerm, sortColumn, sortDirection, columns]);
+  }, [data, searchTerm, searchBy, searchByOptions, sortColumn, sortDirection, columns]);
 
   // Paginate data
   const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
@@ -239,7 +298,7 @@ export function DataTable<T extends { id: number | string }>({
   return (
     <div className="space-y-4">
       {/* Search and Export */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
@@ -249,6 +308,69 @@ export function DataTable<T extends { id: number | string }>({
             className="pl-10"
           />
         </div>
+        {searchByOptions && (
+          <div className="flex items-center gap-2">
+            <label htmlFor="search-by" className="text-sm text-muted-foreground">
+              {searchByLabel}
+            </label>
+            <select
+              id="search-by"
+              value={searchBy ?? "all"}
+              onChange={(e) => {
+                onSearchByChange?.(e.target.value);
+                onSearchByValueChange?.({});
+              }}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              {searchByOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {searchBy && searchBy !== "all" && (
+              <>
+                {(() => {
+                  const uniqueValues = getUniqueValues(searchBy);
+                  const isBooleanField = searchBy === "faydaVerified" || searchBy === "paymentStatus";
+                  const isNumericField = searchBy === "roundNumber";
+                  
+                  // Show dropdown for boolean or limited value fields
+                  if (isBooleanField || (uniqueValues.length <= 20 && !isNumericField)) {
+                    const options = isBooleanField 
+                      ? ["yes", "no"]
+                      : uniqueValues;
+                    
+                    return (
+                      <select
+                        value={searchByValue?.[searchBy] ?? ""}
+                        onChange={(e) => onSearchByValueChange?.({ ...searchByValue, [searchBy]: e.target.value })}
+                        className="rounded-md border border-input bg-background px-3 py-2 text-sm w-48"
+                      >
+                        <option value="">Select {searchByOptions.find(o => o.value === searchBy)?.label || searchBy}...</option>
+                        {options.map((value) => (
+                          <option key={value} value={value}>
+                            {value.charAt(0).toUpperCase() + value.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    );
+                  }
+                  
+                  // Show text input for other fields
+                  return (
+                    <Input
+                      placeholder={`Filter by ${searchByOptions.find(o => o.value === searchBy)?.label || searchBy}...`}
+                      value={searchByValue?.[searchBy] ?? ""}
+                      onChange={(e) => onSearchByValueChange?.({ ...searchByValue, [searchBy]: e.target.value })}
+                      className="w-40"
+                    />
+                  );
+                })()}
+              </>
+            )}
+          </div>
+        )}
         {exportable && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -299,13 +421,13 @@ export function DataTable<T extends { id: number | string }>({
                   </div>
                 </TableHead>
               ))}
-              {(onEdit || onDelete) && <TableHead className="w-24">Actions</TableHead>}
+              {(onEdit || onDelete || onGenerateBadge) && <TableHead className="w-32">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} className="h-24 text-center">
+                <TableCell colSpan={columns.length + ((onEdit || onDelete || onGenerateBadge) ? 1 : 0)} className="h-24 text-center">
                   No results found.
                 </TableCell>
               </TableRow>
@@ -319,9 +441,24 @@ export function DataTable<T extends { id: number | string }>({
                         : String(item[column.key as keyof T] || "")}
                     </TableCell>
                   ))}
-                  {(onEdit || onDelete) && (
+                  {(onEdit || onDelete || onGenerateBadge) && (
                     <TableCell>
                       <div className="flex items-center space-x-1">
+                        {onGenerateBadge && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onGenerateBadge(item)}
+                            className="h-8 w-8 p-0 text-primary hover:text-primary"
+                            title="Generate Badge"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                              <circle cx="9" cy="9" r="2"></circle>
+                              <path d="M21 15l-3.05-3.05a2.828 2.828 0 1 0-3.98 3.98L21 15Z"></path>
+                            </svg>
+                          </Button>
+                        )}
                         {onEdit && (
                           <Button
                             variant="ghost"

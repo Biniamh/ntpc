@@ -233,8 +233,9 @@ router.post("/ey-participants", async (req, res) => {
       : null;
 
     const registrationNumber = generateRegistrationNumber();
+    const { paymentMethod: _paymentMethod, bankReference: _bankReference, paymentSlip: _paymentSlip, ...participantPayload } = parsed.data;
     const participantData = {
-      ...parsed.data,
+      ...participantPayload,
       faydaVerified,
       paymentStatus: paymentVerified,
       registrationNumber,

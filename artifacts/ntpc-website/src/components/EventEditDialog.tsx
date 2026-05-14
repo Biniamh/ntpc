@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useLanguage } from "@/lib/language-provider";
 
 const eventEditSchema = z.object({
   title: z.string().min(1, "Title required"),
@@ -35,6 +36,7 @@ interface EventEditDialogProps {
 }
 
 export function EventEditDialog({ event, open, onOpenChange, onSave, loading }: EventEditDialogProps) {
+  const { t } = useLanguage();
   const form = useForm<EventEditValues>({
     resolver: zodResolver(eventEditSchema),
     defaultValues: {
@@ -64,7 +66,7 @@ export function EventEditDialog({ event, open, onOpenChange, onSave, loading }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Edit Event</DialogTitle>
+          <DialogTitle>{t.admin.events.edit}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -73,9 +75,9 @@ export function EventEditDialog({ event, open, onOpenChange, onSave, loading }: 
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Event Title</FormLabel>
+                  <FormLabel>{t.admin.events.title}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Event name..." {...field} />
+                    <Input placeholder={t.admin.events.title} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -86,9 +88,9 @@ export function EventEditDialog({ event, open, onOpenChange, onSave, loading }: 
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t.admin.events.description}</FormLabel>
                   <FormControl>
-                    <Textarea rows={3} placeholder="Description..." {...field} />
+                    <Textarea rows={3} placeholder={t.admin.events.description} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -100,7 +102,7 @@ export function EventEditDialog({ event, open, onOpenChange, onSave, loading }: 
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel>{t.admin.events.date}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -113,7 +115,7 @@ export function EventEditDialog({ event, open, onOpenChange, onSave, loading }: 
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Image URL</FormLabel>
+                    <FormLabel>{t.admin.events.image_url}</FormLabel>
                     <FormControl>
                       <Input placeholder="https://..." {...field} />
                     </FormControl>
@@ -124,10 +126,10 @@ export function EventEditDialog({ event, open, onOpenChange, onSave, loading }: 
             </div>
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                {t.admin.common.cancel}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save Changes"}
+                {loading ? t.admin.common.loading : t.admin.common.save}
               </Button>
             </div>
           </form>

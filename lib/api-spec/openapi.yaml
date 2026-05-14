@@ -985,7 +985,9 @@ components:
           type: string
         description:
           type: string
-        date:
+        startDate:
+          type: string
+        endDate:
           type: string
         imageUrl:
           type: string
@@ -999,7 +1001,8 @@ components:
         - id
         - title
         - description
-        - date
+        - startDate
+        - endDate
         - type
         - year
         - createdAt
@@ -1011,7 +1014,9 @@ components:
           type: string
         description:
           type: string
-        date:
+        startDate:
+          type: string
+        endDate:
           type: string
         imageUrl:
           type: string
@@ -1022,7 +1027,8 @@ components:
       required:
         - title
         - description
-        - date
+        - startDate
+        - endDate
         - type
         - year
 

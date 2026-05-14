@@ -147,7 +147,8 @@ export interface EyEvent {
   id: number;
   title: string;
   description: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   imageUrl?: string;
   type: string;
   year: number;
@@ -157,7 +158,8 @@ export interface EyEvent {
 export interface CreateEyEvent {
   title: string;
   description: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   imageUrl?: string;
   type: string;
   year: number;
@@ -168,6 +170,8 @@ export interface EyRound {
   eventId: number;
   roundNumber: number;
   capacity: number;
+  fromDate?: string;
+  toDate?: string;
   createdAt: string;
 }
 
@@ -175,6 +179,8 @@ export interface CreateEyRound {
   eventId: number;
   roundNumber: number;
   capacity: number;
+  fromDate?: string;
+  toDate?: string;
 }
 
 export interface EyParticipant {

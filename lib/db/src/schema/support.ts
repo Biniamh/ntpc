@@ -1,6 +1,5 @@
+import { InferModel } from "drizzle-orm";
 import { pgTable, serial, text, numeric, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
 
 export const supportSubmissionsTable = pgTable("support_submissions", {
   id: serial("id").primaryKey(),
@@ -17,6 +16,5 @@ export const supportSubmissionsTable = pgTable("support_submissions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertSupportSubmissionSchema = createInsertSchema(supportSubmissionsTable).omit({ id: true, createdAt: true });
-export type InsertSupportSubmission = z.infer<typeof insertSupportSubmissionSchema>;
+export type InsertSupportSubmission = InferModel<typeof supportSubmissionsTable, "insert">;
 export type SupportSubmission = typeof supportSubmissionsTable.$inferSelect;
