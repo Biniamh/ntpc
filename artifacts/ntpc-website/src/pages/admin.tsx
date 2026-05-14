@@ -1351,6 +1351,7 @@ function ExcellentYouthContent({
               columns={[
                 { key: "registrationNumber", header: t.admin.ey.reg_number, searchable: true, sortable: true },
                 { key: "firstName", header: t.admin.ey.first_name, searchable: true, sortable: true },
+                { key: "middleName", header: t.admin.church.middle_name, searchable: true, sortable: true },
                 { key: "lastName", header: t.admin.ey.last_name, searchable: true, sortable: true },
                 { key: "email", header: t.admin.ey.email, searchable: true },
                 { key: "city", header: t.admin.ey.city, searchable: true },

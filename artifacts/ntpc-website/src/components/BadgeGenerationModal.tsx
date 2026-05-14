@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Printer, Download, X } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/lib/language-provider";
+import excellentYouthImage from "@/assets/excellentyouth.jpeg";
 
 interface BadgeModalProps {
   open: boolean;
@@ -32,7 +33,7 @@ export function BadgeGenerationModal({
 
   if (!participant) return null;
 
-  const participantName = `${participant.firstName} ${participant.lastName}`;
+  const participantName = `${participant.firstName} ${participant.middleName ? participant.lastName + " " : ""}${participant.lastName}`;
 
   const handlePrint = () => {
     setIsPrinting(true);
@@ -63,8 +64,8 @@ export function BadgeGenerationModal({
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300"></div>
 
               {/* Watermark */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-                <span className="text-8xl font-bold transform -rotate-12">NTPC</span>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-15">
+                <img src={excellentYouthImage} alt="Excellent Youth watermark" className="h-72 w-72 object-contain opacity-20" />
               </div>
 
               <div className="relative z-10 space-y-6">
@@ -72,10 +73,10 @@ export function BadgeGenerationModal({
                 <div className="text-center border-b border-white/20 pb-4">
                   <div className="flex justify-center mb-3">
                     <div className="bg-white/10 rounded-full p-3 border-2 border-white/30">
-                      <div className="text-4xl">⛪</div>
+                      <img src={excellentYouthImage} alt="Excellent Youth logo" className="h-10 w-10 rounded-full object-cover" />
                     </div>
                   </div>
-                  <h2 className="text-xl font-bold">NTPC Church</h2>
+                  <h2 className="text-xl font-bold">መልካም ወጣት</h2>
                   <p className="text-sm text-blue-200">Excellent Youth Program</p>
                 </div>
 
@@ -83,22 +84,19 @@ export function BadgeGenerationModal({
                 <div className="text-center">
                   <h3 className="text-2xl font-bold mb-2">{event?.title || "Event"}</h3>
                   <div className="inline-block bg-white/10 px-4 py-1 rounded-full text-sm border border-white/20">
-                    Round {round?.roundNumber || "-"}
+                    ዙር {round?.roundNumber || "-"}
                   </div>
                 </div>
 
                 {/* Participant Information */}
                 <div className="space-y-4 border-t border-b border-white/20 py-4">
                   <div className="text-center">
-                    <p className="text-sm text-blue-200 mb-1">Participant</p>
+                    <p className="text-sm text-blue-200 mb-1">የተሳታፊ ሙሉ ስም</p>
                     <p className="text-2xl font-bold">{participantName}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-blue-200 text-xs font-semibold">FAYDA ID</p>
-                      <p className="font-mono font-bold text-base">{participant.faydaId}</p>
-                    </div>
+                  
                     <div>
                       <p className="text-blue-200 text-xs font-semibold">REG #</p>
                       <p className="font-mono font-bold text-base">{participant.registrationNumber}</p>
@@ -123,18 +121,8 @@ export function BadgeGenerationModal({
 
                 {/* Status Information */}
                 <div className="flex justify-around text-center text-xs">
-                  <div>
-                    <p className="text-blue-200">Fayda Verified</p>
-                    <Badge variant={participant.faydaVerified ? "default" : "secondary"} className="mt-1">
-                      {participant.faydaVerified ? "✓ Yes" : "✗ No"}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-blue-200">Payment Status</p>
-                    <Badge variant={participant.paymentStatus ? "default" : "secondary"} className="mt-1">
-                      {participant.paymentStatus ? "✓ Paid" : "✗ Pending"}
-                    </Badge>
-                  </div>
+                  
+            
                 </div>
 
                 {/* Footer */}
