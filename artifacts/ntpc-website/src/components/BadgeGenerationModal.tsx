@@ -37,12 +37,258 @@ export function BadgeGenerationModal({
     ? `${participant.firstName} ${participant.middleName} ${participant.lastName}`
     : `${participant.firstName} ${participant.lastName}`;
 
+  const buildBadgeHtml = () => {
+    const title = event?.title || "Event";
+    const roundLabel = round?.roundNumber ? `ዙር ${round.roundNumber}` : "ዙር -";
+    const registrationNumber = participant.registrationNumber || "N/A";
+    const city = participant.city || "N/A";
+    const email = participant.email || "N/A";
+    const coordinatorName = coordinator?.name || t.admin.ey.unassigned;
+    const dateRange = round?.fromDate && round?.toDate
+      ? `${format(new Date(round.fromDate), "MMM d")} - ${format(new Date(round.toDate), "MMM d, yyyy")}`
+      : "N/A";
+    const logoUrl = new URL(excellentYouthImage, window.location.href).href;
+
+    return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Print Badge</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 1rem;
+        background: #f8fafc;
+        font-family: Inter, system-ui, sans-serif;
+        color: #0f172a;
+      }
+      .badge-root {
+        width: 42rem;
+        margin: 0 auto;
+      }
+      .badge {
+        position: relative;
+        background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+        border-radius: 1.5rem;
+        overflow: hidden;
+        color: #ffffff;
+        padding: 1rem;
+      }
+      .badge::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url('${logoUrl}');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.15;
+        transform: scale(1.1);
+      }
+      .badge-content {
+        position: relative;
+        z-index: 1;
+      }
+      .top-bar {
+        height: 0.25rem;
+        width: 100%;
+        background: linear-gradient(90deg, #fbbf24, #fb7185, #eab308);
+        border-radius: 9999px;
+        margin-bottom: 1rem;
+      }
+      .logo-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+      }
+      .logo-circle {
+        width: 7.25rem;
+        height: 7.25rem;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.14);
+        border: 2px solid rgba(255,255,255,0.3);
+        display: grid;
+        place-items: center;
+      }
+      .logo-circle img {
+        width: 5rem;
+        height: 5rem;
+        object-fit: cover;
+        border-radius: 9999px;
+      }
+      .badge-header {
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.22);
+        padding-bottom: 0.5rem;
+      }
+      .badge-header h2 {
+        margin: 0.25rem 0 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+      }
+      .badge-header p {
+        margin: 0.25rem 0 0;
+        font-size: 0.75rem;
+        color: rgba(209, 213, 219, 1);
+      }
+      .event-title {
+        margin: 0.75rem 0 0.25rem;
+        text-align: center;
+        font-size: 1.25rem;
+        font-weight: 700;
+      }
+      .round-badge {
+        display: inline-block;
+        margin: 0 auto;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        font-size: 0.75rem;
+      }
+      .participant-info {
+        border-top: 1px solid rgba(255,255,255,0.22);
+        border-bottom: 1px solid rgba(255,255,255,0.22);
+        padding: 0.75rem 0;
+      }
+      .participant-info .label {
+        display: block;
+        font-size: 0.6875rem;
+        color: rgba(191, 219, 254, 1);
+        letter-spacing: 0.08em;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+      }
+      .participant-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0 0 0.75rem;
+        text-align: center;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+        font-size: 0.875rem;
+      }
+      .info-item {
+        line-height: 1.35;
+      }
+      .info-item span {
+        display: block;
+      }
+      .footer {
+        margin-top: 0.75rem;
+        text-align: center;
+      }
+      .footer-code {
+        display: inline-block;
+        padding: 0.375rem 0.625rem;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 0.5rem;
+        background: rgba(255,255,255,0.1);
+        letter-spacing: 0.12em;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.75rem;
+        margin-bottom: 0.375rem;
+        font-weight: 700;
+      }
+      .footer-note {
+        margin: 0;
+        font-size: 0.6875rem;
+        color: rgba(203,213,225,1);
+        font-style: italic;
+      }
+      @media print {
+        body {
+          padding: 0;
+          background: white;
+        }
+        .badge-root {
+          margin: 0;
+          width: 42rem;
+        }
+        .badge {
+          box-shadow: none;
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="badge-root">
+      <article class="badge">
+        <div class="badge-content">
+          <div class="top-bar"></div>
+          <div class="logo-wrapper">
+            <div class="logo-circle">
+              <img src="${logoUrl}" alt="Excellent Youth logo" />
+            </div>
+          </div>
+          <div class="badge-header">
+            <h2>መልካም ወጣት</h2>
+            <p>Excellent Youth Program</p>
+          </div>
+          <div class="event-title">${title}</div>
+          <div class="round-badge">${roundLabel}</div>
+          <div class="participant-info">
+            <div class="participant-name">${participantName}</div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">REG #</span>
+                <span>${registrationNumber}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">CITY</span>
+                <span>${city}</span>
+              </div>
+              <div class="info-item" style="grid-column: span 2;">
+                <span class="label">EMAIL</span>
+                <span>${email}</span>
+              </div>
+              <div class="info-item" style="grid-column: span 2;">
+                <span class="label">COORDINATOR</span>
+                <span>${coordinatorName}</span>
+              </div>
+            </div>
+          </div>
+          <div class="footer">
+            <div class="footer-code">${registrationNumber}</div>
+            <p class="footer-note">Please wear this badge throughout the event</p>
+          </div>
+        </div>
+      </article>
+    </div>
+    <script>
+      window.onload = function() {
+        window.print();
+      };
+    </script>
+  </body>
+</html>`;
+  };
+
   const handlePrint = () => {
     setIsPrinting(true);
-    setTimeout(() => {
-      window.print();
+    const html = buildBadgeHtml();
+    const blob = new Blob([html], { type: "text/html" });
+    const blobUrl = URL.createObjectURL(blob);
+    const badgeWindow = window.open(blobUrl, "_blank", "width=900,height=700");
+
+    if (!badgeWindow) {
+      URL.revokeObjectURL(blobUrl);
       setIsPrinting(false);
-    }, 100);
+      return;
+    }
+
+    badgeWindow.focus();
+
+    const cleanup = () => {
+      URL.revokeObjectURL(blobUrl);
+      setIsPrinting(false);
+    };
+
+    setTimeout(cleanup, 500);
   };
 
   const handleConfirm = () => {
@@ -178,9 +424,9 @@ export function BadgeGenerationModal({
             <X className="h-4 w-4 mr-2" />
             {t.admin.common.cancel}
           </Button>
-          <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700" disabled={isPrinting}>
             <Printer className="h-4 w-4 mr-2" />
-            {t.admin.ey.print_badge || "Print Badge"}
+            {isPrinting ? t.admin.common.loading : t.admin.ey.print_badge || "Print Badge"}
           </Button>
           <Button 
             onClick={handleConfirm} 
