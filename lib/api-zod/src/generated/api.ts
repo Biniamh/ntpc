@@ -111,6 +111,7 @@ export const ListPostsResponseItem = zod.object({
   photoUrl: zod.string().optional(),
   facebookUrl: zod.string().optional(),
   youtubeUrl: zod.string().optional(),
+  pinned: zod.boolean().optional(),
   createdAt: zod.string(),
 });
 export const ListPostsResponse = zod.array(ListPostsResponseItem);
@@ -140,6 +141,7 @@ export const GetPostResponse = zod.object({
   photoUrl: zod.string().optional(),
   facebookUrl: zod.string().optional(),
   youtubeUrl: zod.string().optional(),
+  pinned: zod.boolean().optional(),
   createdAt: zod.string(),
 });
 
@@ -165,6 +167,7 @@ export const UpdatePostResponse = zod.object({
   photoUrl: zod.string().optional(),
   facebookUrl: zod.string().optional(),
   youtubeUrl: zod.string().optional(),
+  pinned: zod.boolean().optional(),
   createdAt: zod.string(),
 });
 
@@ -184,6 +187,8 @@ export const ListEventsResponseItem = zod.object({
   description: zod.string(),
   date: zod.string(),
   imageUrl: zod.string().optional(),
+  pinned: zod.boolean().optional(),
+  category: zod.string().optional(),
   createdAt: zod.string(),
 });
 export const ListEventsResponse = zod.array(ListEventsResponseItem);
@@ -218,6 +223,8 @@ export const UpdateEventResponse = zod.object({
   description: zod.string(),
   date: zod.string(),
   imageUrl: zod.string().optional(),
+  pinned: zod.boolean().optional(),
+  category: zod.string().optional(),
   createdAt: zod.string(),
 });
 
@@ -317,7 +324,8 @@ export const GetEyEventResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
   description: zod.string(),
-  date: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
   imageUrl: zod.string().optional(),
   type: zod.string(),
   year: zod.number(),
@@ -334,7 +342,8 @@ export const UpdateEyEventParams = zod.object({
 export const UpdateEyEventBody = zod.object({
   title: zod.string(),
   description: zod.string(),
-  date: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
   imageUrl: zod.string().optional(),
   type: zod.string(),
   year: zod.number(),
@@ -344,7 +353,8 @@ export const UpdateEyEventResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
   description: zod.string(),
-  date: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
   imageUrl: zod.string().optional(),
   type: zod.string(),
   year: zod.number(),
@@ -394,8 +404,8 @@ export const UpdateEyRoundBody = zod.object({
   eventId: zod.number(),
   roundNumber: zod.number(),
   capacity: zod.number(),
-  fromDate: zod.string().optional(),
-  toDate: zod.string().optional(),
+  fromDate: zod.string(),
+  toDate: zod.string(),
 });
 
 export const UpdateEyRoundResponse = zod.object({
@@ -434,32 +444,39 @@ export const ListEyParticipantsResponseItem = zod.object({
   registrationNumber: zod.string(),
   coordinatorId: zod.number().optional(),
   badgeGenerated: zod.boolean().optional(),
-  event: zod.object({
-    id: zod.number(),
-    title: zod.string(),
-    description: zod.string(),
-    date: zod.string(),
-    imageUrl: zod.string().optional(),
-    type: zod.string(),
-    year: zod.number(),
-    createdAt: zod.string(),
-  }).optional(),
-  round: zod.object({
-    id: zod.number(),
-    eventId: zod.number(),
-    roundNumber: zod.number(),
-    capacity: zod.number(),
-    fromDate: zod.string().optional(),
-    toDate: zod.string().optional(),
-    createdAt: zod.string(),
-  }).optional(),
-  coordinator: zod.object({
-    id: zod.number(),
-    name: zod.string(),
-    phone: zod.string(),
-    email: zod.string(),
-    createdAt: zod.string(),
-  }).optional(),
+  event: zod
+    .object({
+      id: zod.number(),
+      title: zod.string(),
+      description: zod.string(),
+      startDate: zod.string(),
+      endDate: zod.string(),
+      imageUrl: zod.string().optional(),
+      type: zod.string(),
+      year: zod.number(),
+      createdAt: zod.string(),
+    })
+    .optional(),
+  round: zod
+    .object({
+      id: zod.number(),
+      eventId: zod.number(),
+      roundNumber: zod.number(),
+      capacity: zod.number(),
+      fromDate: zod.string().optional(),
+      toDate: zod.string().optional(),
+      createdAt: zod.string(),
+    })
+    .optional(),
+  coordinator: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      phone: zod.string(),
+      email: zod.string(),
+      createdAt: zod.string(),
+    })
+    .optional(),
   createdAt: zod.string(),
 });
 export const ListEyParticipantsResponse = zod.array(
@@ -523,6 +540,39 @@ export const UpdateEyParticipantResponse = zod.object({
   registrationNumber: zod.string(),
   coordinatorId: zod.number().optional(),
   badgeGenerated: zod.boolean().optional(),
+  event: zod
+    .object({
+      id: zod.number(),
+      title: zod.string(),
+      description: zod.string(),
+      startDate: zod.string(),
+      endDate: zod.string(),
+      imageUrl: zod.string().optional(),
+      type: zod.string(),
+      year: zod.number(),
+      createdAt: zod.string(),
+    })
+    .optional(),
+  round: zod
+    .object({
+      id: zod.number(),
+      eventId: zod.number(),
+      roundNumber: zod.number(),
+      capacity: zod.number(),
+      fromDate: zod.string().optional(),
+      toDate: zod.string().optional(),
+      createdAt: zod.string(),
+    })
+    .optional(),
+  coordinator: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      phone: zod.string(),
+      email: zod.string(),
+      createdAt: zod.string(),
+    })
+    .optional(),
   createdAt: zod.string(),
 });
 

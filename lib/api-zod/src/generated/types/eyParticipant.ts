@@ -5,6 +5,9 @@
  * New Testament Priests Church API
  * OpenAPI spec version: 0.1.0
  */
+import type { EyCoordinator } from "./eyCoordinator";
+import type { EyEvent } from "./eyEvent";
+import type { EyRound } from "./eyRound";
 
 export interface EyParticipant {
   id: number;
@@ -20,6 +23,10 @@ export interface EyParticipant {
   roundId: number;
   paymentStatus: boolean;
   registrationNumber: string;
-  coordinatorId: number;
+  coordinatorId?: number;
+  badgeGenerated?: boolean;
+  event?: EyEvent;
+  round?: EyRound;
+  coordinator?: EyCoordinator;
   createdAt: string;
 }

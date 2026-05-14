@@ -13,5 +13,6 @@ export interface Post {
   photoUrl?: string;
   facebookUrl?: string;
   youtubeUrl?: string;
+  pinned?: boolean;
   createdAt: string;
 }

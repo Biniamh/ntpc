@@ -242,7 +242,7 @@ export default function Eyregister() {
             );
 
             setCoordinatorId(
-              participant.coordinatorId || "N/A"
+              participant.coordinatorId?.toString() || "N/A"
             );
 
             setStep(4);

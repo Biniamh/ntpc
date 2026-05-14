@@ -94,6 +94,7 @@ export interface Post {
   photoUrl?: string;
   facebookUrl?: string;
   youtubeUrl?: string;
+  pinned?: boolean;
   createdAt: string;
 }
 
@@ -111,6 +112,8 @@ export interface Event {
   description: string;
   date: string;
   imageUrl?: string;
+  pinned?: boolean;
+  category?: string;
   createdAt: string;
 }
 
@@ -179,8 +182,16 @@ export interface CreateEyRound {
   eventId: number;
   roundNumber: number;
   capacity: number;
-  fromDate?: string;
-  toDate?: string;
+  fromDate: string;
+  toDate: string;
+}
+
+export interface EyCoordinator {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  createdAt: string;
 }
 
 export interface EyParticipant {
@@ -197,7 +208,11 @@ export interface EyParticipant {
   roundId: number;
   paymentStatus: boolean;
   registrationNumber: string;
-  coordinatorId: number;
+  coordinatorId?: number;
+  badgeGenerated?: boolean;
+  event?: EyEvent;
+  round?: EyRound;
+  coordinator?: EyCoordinator;
   createdAt: string;
 }
 
@@ -238,14 +253,6 @@ export interface UpdateEyParticipant {
   paymentStatus?: boolean;
   registrationNumber?: string;
   coordinatorId?: number;
-}
-
-export interface EyCoordinator {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
-  createdAt: string;
 }
 
 export interface CreateEyCoordinator {

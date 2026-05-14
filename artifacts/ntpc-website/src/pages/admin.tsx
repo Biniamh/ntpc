@@ -657,6 +657,32 @@ function AdminDashboard() {
         </div>
       </div>
 
+      <PostEditDialog
+        post={editingPost}
+        open={postEditOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPostEditOpen(false);
+            setEditingPost(null);
+          }
+        }}
+        onSave={handleSavePost}
+        loading={false}
+      />
+
+      <EventEditDialog
+        event={editingEvent}
+        open={eventEditOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEventEditOpen(false);
+            setEditingEvent(null);
+          }
+        }}
+        onSave={handleSaveEvent}
+        loading={false}
+      />
+
       <Dialog open={eyEventEditOpen} onOpenChange={(open) => {
         if (!open) {
           setEyEventEditOpen(false);

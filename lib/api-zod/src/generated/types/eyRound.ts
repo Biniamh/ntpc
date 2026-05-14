@@ -11,5 +11,7 @@ export interface EyRound {
   eventId: number;
   roundNumber: number;
   capacity: number;
+  fromDate?: string;
+  toDate?: string;
   createdAt: string;
 }
