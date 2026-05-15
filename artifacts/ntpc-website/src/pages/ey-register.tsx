@@ -82,6 +82,19 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+type FaydaVerificationResult = {
+  verified: boolean;
+  id: string;
+  name?: string;
+  birthDate?: string;
+  gender?: string;
+  status?: string;
+  authUrl?: string;
+  state?: string;
+  codeVerifier?: string;
+  error?: string;
+};
+
 export default function Eyregister() {
   const { language, t } = useLanguage();
   const { toast } = useToast();
@@ -89,6 +102,8 @@ export default function Eyregister() {
   const [step, setStep] = useState(1);
 
   const [faydaVerified, setFaydaVerified] = useState(false);
+  const [faydaVerificationProfile, setFaydaVerificationProfile] =
+    useState<FaydaVerificationResult | null>(null);
 
   const [registrationNumber, setRegistrationNumber] = useState<
     string | null
@@ -148,6 +163,43 @@ export default function Eyregister() {
     }
   }, [selectedRoundId]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+
+    if (!code || !state) return;
+
+    const storedState = sessionStorage.getItem("fayda_state");
+    const codeVerifier = sessionStorage.getItem("fayda_code_verifier");
+    const faydaId = sessionStorage.getItem("fayda_id");
+
+    if (state !== storedState || !codeVerifier || !faydaId) {
+      toast({
+        title: t.ey_register.error,
+        description: t.ey_register.something_wrong,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    verifyFayda(faydaId, { code, codeVerifier }).then((verified) => {
+      if (!verified) return;
+
+      setFaydaVerified(true);
+      setStep(2);
+      toast({
+        title: t.common.success,
+        description: t.ey_register.national_id_verified,
+      });
+
+      sessionStorage.removeItem("fayda_state");
+      sessionStorage.removeItem("fayda_code_verifier");
+      sessionStorage.removeItem("fayda_id");
+      window.history.replaceState({}, "", window.location.pathname);
+    });
+  }, []);
+
   async function fetchRoundCapacity(roundId: number) {
     try {
       const response = await fetch(
@@ -162,14 +214,60 @@ export default function Eyregister() {
     }
   }
 
-  async function verifyFayda(faydaId: string) {
+  async function verifyFayda(
+    faydaId: string,
+    options: { code?: string; codeVerifier?: string } = {},
+  ) {
     setIsVerifying(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const response = await fetch("/api/fayda/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          faydaId,
+          code: options.code,
+          codeVerifier: options.codeVerifier,
+        }),
+      });
+      const result = (await response.json()) as FaydaVerificationResult;
 
-    setIsVerifying(false);
+      if (result.authUrl && result.state && result.codeVerifier) {
+        sessionStorage.setItem("fayda_state", result.state);
+        sessionStorage.setItem("fayda_code_verifier", result.codeVerifier);
+        sessionStorage.setItem("fayda_id", faydaId);
+        window.location.assign(result.authUrl);
+        return false;
+      }
 
-    return true;
+      if (!response.ok || !result.verified) {
+        toast({
+          title: t.ey_register.error,
+          description: result.error || t.ey_register.something_wrong,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      setFaydaVerificationProfile(result);
+      const nameParts = (result.name || "").trim().split(/\s+/).filter(Boolean);
+      if (nameParts.length >= 2 && !form.getValues("firstName") && !form.getValues("lastName")) {
+        form.setValue("firstName", nameParts[0]);
+        form.setValue("lastName", nameParts[nameParts.length - 1]);
+        if (nameParts.length > 2) form.setValue("middleName", nameParts.slice(1, -1).join(" "));
+      }
+
+      return true;
+    } catch {
+      toast({
+        title: t.ey_register.error,
+        description: t.ey_register.something_wrong,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsVerifying(false);
+    }
   }
 
   async function processPayment() {
@@ -392,7 +490,7 @@ export default function Eyregister() {
 
                             <FormControl>
                               <Input
-                                placeholder="Enter Fayda ID..."
+                                placeholder={t.ey_register.enter_fayda_id}
                                 className="h-12 rounded-xl"
                                 {...field}
                               />
@@ -417,6 +515,17 @@ export default function Eyregister() {
 
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
+
+                      {faydaVerified && faydaVerificationProfile && (
+                        <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
+                          <div className="font-semibold text-primary">
+                            {t.ey_register.verified}
+                          </div>
+                          <div className="mt-1 text-muted-foreground">
+                            {faydaVerificationProfile.name || faydaVerificationProfile.id}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
