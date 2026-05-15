@@ -380,9 +380,9 @@ function AdminDashboard() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListDepartmentsQueryKey() });
         departmentForm.reset({ name: "", description: "", groupPhotoUrl: "", members: "", activities: "", meetingTime: "" });
-        toast({ title: "Department created" });
+        toast({ title: t.admin.church.department_created });
       },
-      onError: () => toast({ title: "Error creating department", variant: "destructive" }),
+      onError: () => toast({ title: t.admin.church.department_create_error, variant: "destructive" }),
     });
   }
 
@@ -395,9 +395,9 @@ function AdminDashboard() {
         setDepartmentEditOpen(false);
         setEditingDepartment(null);
         departmentEditForm.reset({ name: "", description: "", groupPhotoUrl: "", members: "", activities: "", meetingTime: "" });
-        toast({ title: "Department updated" });
+        toast({ title: t.admin.church.department_updated });
       },
-      onError: () => toast({ title: "Error updating department", variant: "destructive" }),
+      onError: () => toast({ title: t.admin.church.department_update_error, variant: "destructive" }),
     });
   }
 
@@ -1104,7 +1104,7 @@ function ChurchPortalContent({
       <TabsList className="flex flex-wrap h-auto gap-1 mb-8">
         <TabsTrigger value="posts" className="gap-2"><BookOpen className="h-4 w-4" /> {t.admin.church.weekly_sermons}</TabsTrigger>
         <TabsTrigger value="events" className="gap-2"><Calendar className="h-4 w-4" /> {t.admin.church.events}</TabsTrigger>
-        <TabsTrigger value="departments" className="gap-2"><Building2 className="h-4 w-4" /> Departments ({departments.length})</TabsTrigger>
+        <TabsTrigger value="departments" className="gap-2"><Building2 className="h-4 w-4" /> {t.admin.church.departments} ({departments.length})</TabsTrigger>
         <TabsTrigger value="scripture" className="gap-2"><BookMarked className="h-4 w-4" /> {t.admin.church.scripture}</TabsTrigger>
         <TabsTrigger value="support" className="gap-2"><HeartHandshake className="h-4 w-4" /> {t.admin.church.support_submissions} ({supportList.length})</TabsTrigger>
         <TabsTrigger value="members" className="gap-2"><Users className="h-4 w-4" /> {t.admin.church.membership_requests} ({memberList.length})</TabsTrigger>
@@ -1225,7 +1225,7 @@ function ChurchPortalContent({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5 text-primary" />
-              Add new department
+              {t.admin.church.add_new_department}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1233,29 +1233,29 @@ function ChurchPortalContent({
               <form onSubmit={departmentForm.handleSubmit(handleCreateDepartment)} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField control={departmentForm.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Name</FormLabel><FormControl><Input data-testid="input-departmentName" placeholder="Department name" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t.admin.church.name}</FormLabel><FormControl><Input data-testid="input-departmentName" placeholder={t.admin.church.department_name} {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={departmentForm.control} name="meetingTime" render={({ field }) => (
-                    <FormItem><FormLabel>Meeting time</FormLabel><FormControl><Input data-testid="input-departmentMeetingTime" placeholder="Sundays, 10:00 AM" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t.admin.church.meeting_time}</FormLabel><FormControl><Input data-testid="input-departmentMeetingTime" placeholder={t.admin.church.meeting_time_placeholder} {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
                 <FormField control={departmentForm.control} name="description" render={({ field }) => (
-                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea data-testid="input-departmentDescription" rows={3} placeholder="What this department does" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>{t.admin.church.description}</FormLabel><FormControl><Textarea data-testid="input-departmentDescription" rows={3} placeholder={t.admin.church.department_description_placeholder} {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField control={departmentForm.control} name="groupPhotoUrl" render={({ field }) => (
-                    <FormItem><FormLabel>Group photo URL</FormLabel><FormControl><Input data-testid="input-departmentPhotoUrl" placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t.admin.church.group_photo_url}</FormLabel><FormControl><Input data-testid="input-departmentPhotoUrl" placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={departmentForm.control} name="activities" render={({ field }) => (
-                    <FormItem><FormLabel>Activities</FormLabel><FormControl><Input data-testid="input-departmentActivities" placeholder="Choir practice, outreach, training" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t.admin.church.activities}</FormLabel><FormControl><Input data-testid="input-departmentActivities" placeholder={t.admin.church.department_activities_placeholder} {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
                 <FormField control={departmentForm.control} name="members" render={({ field }) => (
-                  <FormItem><FormLabel>Members</FormLabel><FormControl><Textarea data-testid="input-departmentMembers" rows={4} placeholder="One member per line" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>{t.admin.church.members}</FormLabel><FormControl><Textarea data-testid="input-departmentMembers" rows={4} placeholder={t.admin.church.one_member_per_line} {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="flex flex-wrap gap-2">
                   <Button type="submit" className="rounded-full gap-2" disabled={createDepartment.isPending || updateDepartment.isPending} data-testid="button-saveDepartment">
-                    <Plus className="h-4 w-4" /> {createDepartment.isPending ? t.admin.common.loading : "Add department"}
+                    <Plus className="h-4 w-4" /> {createDepartment.isPending ? t.admin.common.loading : t.admin.church.add_department}
                   </Button>
                 </div>
               </form>
@@ -1265,7 +1265,7 @@ function ChurchPortalContent({
 
         <Card>
           <CardHeader>
-            <CardTitle>Existing departments</CardTitle>
+            <CardTitle>{t.admin.church.existing_departments}</CardTitle>
           </CardHeader>
           <CardContent>
             <DataTable
@@ -1274,17 +1274,17 @@ function ChurchPortalContent({
                 membersCount: Array.isArray(department.members) ? department.members.length : 0,
               }))}
               columns={[
-                { key: "name", header: "Name", searchable: true, sortable: true },
-                { key: "description", header: "Description", searchable: true, render: (value) => (
+                { key: "name", header: t.admin.church.name, searchable: true, sortable: true },
+                { key: "description", header: t.admin.church.description, searchable: true, render: (value) => (
                   <div className="max-w-xs truncate" title={value}>{value}</div>
                 )},
-                { key: "meetingTime", header: "Meeting time", searchable: true },
-                { key: "membersCount", header: "Members", sortable: true },
-                { key: "activities", header: "Activities", searchable: true, render: (value) => (
+                { key: "meetingTime", header: t.admin.church.meeting_time, searchable: true },
+                { key: "membersCount", header: t.admin.church.members_count, sortable: true },
+                { key: "activities", header: t.admin.church.activities, searchable: true, render: (value) => (
                   <div className="max-w-xs truncate" title={value}>{value}</div>
                 )},
               ]}
-              searchPlaceholder="Search departments"
+              searchPlaceholder={t.admin.church.search_departments}
               onEdit={handleEditDepartment}
               loading={loadingDepartments}
               exportFileName="departments"
@@ -1297,36 +1297,36 @@ function ChurchPortalContent({
         }}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Update department</DialogTitle>
+              <DialogTitle>{t.admin.church.update_department}</DialogTitle>
             </DialogHeader>
             <Form {...departmentEditForm}>
               <form onSubmit={departmentEditForm.handleSubmit(handleSaveDepartment)} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField control={departmentEditForm.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Name</FormLabel><FormControl><Input data-testid="input-editDepartmentName" placeholder="Department name" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t.admin.church.name}</FormLabel><FormControl><Input data-testid="input-editDepartmentName" placeholder={t.admin.church.department_name} {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={departmentEditForm.control} name="meetingTime" render={({ field }) => (
-                    <FormItem><FormLabel>Meeting time</FormLabel><FormControl><Input data-testid="input-editDepartmentMeetingTime" placeholder="Sundays, 10:00 AM" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t.admin.church.meeting_time}</FormLabel><FormControl><Input data-testid="input-editDepartmentMeetingTime" placeholder={t.admin.church.meeting_time_placeholder} {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
                 <FormField control={departmentEditForm.control} name="description" render={({ field }) => (
-                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea data-testid="input-editDepartmentDescription" rows={3} placeholder="What this department does" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>{t.admin.church.description}</FormLabel><FormControl><Textarea data-testid="input-editDepartmentDescription" rows={3} placeholder={t.admin.church.department_description_placeholder} {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField control={departmentEditForm.control} name="groupPhotoUrl" render={({ field }) => (
-                    <FormItem><FormLabel>Group photo URL</FormLabel><FormControl><Input data-testid="input-editDepartmentPhotoUrl" placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t.admin.church.group_photo_url}</FormLabel><FormControl><Input data-testid="input-editDepartmentPhotoUrl" placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={departmentEditForm.control} name="activities" render={({ field }) => (
-                    <FormItem><FormLabel>Activities</FormLabel><FormControl><Input data-testid="input-editDepartmentActivities" placeholder="Choir practice, outreach, training" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t.admin.church.activities}</FormLabel><FormControl><Input data-testid="input-editDepartmentActivities" placeholder={t.admin.church.department_activities_placeholder} {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
                 <FormField control={departmentEditForm.control} name="members" render={({ field }) => (
-                  <FormItem><FormLabel>Members</FormLabel><FormControl><Textarea data-testid="input-editDepartmentMembers" rows={4} placeholder="One member per line" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>{t.admin.church.members}</FormLabel><FormControl><Textarea data-testid="input-editDepartmentMembers" rows={4} placeholder={t.admin.church.one_member_per_line} {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={handleCancelDepartmentEdit}>Cancel</Button>
+                  <Button type="button" variant="outline" onClick={handleCancelDepartmentEdit}>{t.admin.common.cancel}</Button>
                   <Button type="submit" disabled={updateDepartment.isPending}>
-                    {updateDepartment.isPending ? t.admin.common.loading : "Save changes"}
+                    {updateDepartment.isPending ? t.admin.common.loading : t.admin.church.save_changes}
                   </Button>
                 </DialogFooter>
               </form>
