@@ -62,7 +62,7 @@ export default function Join() {
             {language === 'am' ? 'አባል ይሁኑ' : 'Join Our Church Family'}
           </h1>
           <p className="text-white/75 text-lg">
-            {language === 'am' ? 'ቤተ ቤታችሁ ነው!' : 'This is your home — you belong here!'}
+            {language === 'am' ? 'ቤታችሁ ነው!' : 'This is your home — you belong here!'}
           </p>
         </div>
       </section>
@@ -103,10 +103,10 @@ export default function Join() {
                 <FormItem><FormLabel>{language === 'am' ? 'ሥራ' : 'Occupation'}</FormLabel><FormControl><Input data-testid="input-occupation" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="previousChurch" render={({ field }) => (
-                <FormItem><FormLabel>{language === 'am' ? 'ቀድሞ ያባሉ ቤተ ክርስቲያን' : 'Previous Church Membership'}</FormLabel><FormControl><Input data-testid="input-previousChurch" placeholder={language === 'am' ? 'ቤተ ክርስቲያን ስም...' : 'Church name or N/A'} {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{language === 'am' ? 'ቀድሞ አባል የነበሩበት ቤተ ክርስቲያን' : 'Previous Church Membership'}</FormLabel><FormControl><Input data-testid="input-previousChurch" placeholder={language === 'am' ? 'ቤተ ክርስቲያን ስም...' : 'Church name or N/A'} {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="servingAs" render={({ field }) => (
-                <FormItem><FormLabel>{language === 'am' ? 'ስለምን እናያዝ (ካሉ)' : 'Currently Serving As (if any)'}</FormLabel><FormControl><Input data-testid="input-servingAs" placeholder={language === 'am' ? 'ዘማሪ፣ ዲያቆን... ወይም ምንም' : 'Singer, Deacon... or leave blank'} {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{language === 'am' ? 'በምን ዘርፍ ያገለግሉ ነበር(ካለ)' : 'Currently Serving As (if any)'}</FormLabel><FormControl><Input data-testid="input-servingAs" placeholder={language === 'am' ? 'ዘማሪ፣ ዲያቆን... ወይም ምንም' : 'Singer, Deacon... or leave blank'} {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="baptized" render={({ field }) => (
                 <FormItem>

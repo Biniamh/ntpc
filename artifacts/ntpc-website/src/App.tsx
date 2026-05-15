@@ -23,6 +23,7 @@ import Eyregister from "@/pages/ey-register";
 import Contact from "@/pages/contact";
 import Admin from "@/pages/admin";
 import Members from "@/pages/members";
+import Reports from "@/pages/reports";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,8 +59,9 @@ function Router() {
 <Route path="/ey-register" 
   component={Eyregister} />
               
-              <Route path="/contact" component={Contact} />
-              <Route component={NotFound} />
+<Route path="/contact" component={Contact} />
+               <Route path="/reports" component={Reports} />
+               <Route component={NotFound} />
             </Switch>
           </main>
           <Footer />

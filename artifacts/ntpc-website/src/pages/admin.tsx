@@ -53,12 +53,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut, Trash2, Plus, BookOpen, Calendar, Users, HeartHandshake, BookMarked, Shield, Church, Star, Target, UserCheck } from "lucide-react";
+import { LogOut, Trash2, Plus, BookOpen, Calendar, Users, HeartHandshake, BookMarked, Shield, Church, Star, Target, UserCheck, BarChart3 } from "lucide-react";
 import { format } from "date-fns";
 import { DataTable } from "@/components/DataTable";
 import { PostEditDialog } from "@/components/PostEditDialog";
 import { EventEditDialog } from "@/components/EventEditDialog";
 import { BadgeGenerationModal } from "@/components/BadgeGenerationModal";
+import Reports from "@/pages/reports";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username required"),
@@ -193,8 +194,8 @@ function AdminDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Active section state
-  const [activeSection, setActiveSection] = useState<'church' | 'ey'>('church');
+// Active section state
+   const [activeSection, setActiveSection] = useState<'church' | 'ey' | 'reports'>('church');
 
   const { data: supportList = [], isLoading: loadingSupport } = useListSupportSubmissions();
   const { data: memberList = [], isLoading: loadingMembers } = useListMembershipRequests();
@@ -563,15 +564,24 @@ function AdminDashboard() {
             {t.admin.sidebar.church_portal}
           </Button>
 
-          <Button
-            variant={activeSection === 'ey' ? 'default' : 'ghost'}
-            className="w-full justify-start gap-2"
-            onClick={() => setActiveSection('ey')}
-          >
-            <Star className="h-4 w-4" />
-            {t.admin.sidebar.ey_management}
-          </Button>
-        </div>
+<Button
+             variant={activeSection === 'ey' ? 'default' : 'ghost'}
+             className="w-full justify-start gap-2"
+             onClick={() => setActiveSection('ey')}
+           >
+             <Star className="h-4 w-4" />
+             {t.admin.sidebar.ey_management}
+           </Button>
+
+           <Button
+             variant={activeSection === 'reports' ? 'default' : 'ghost'}
+             className="w-full justify-start gap-2"
+             onClick={() => setActiveSection('reports')}
+           >
+             <BarChart3 className="h-4 w-4" />
+             {t.admin.sidebar.reports}
+           </Button>
+         </div>
 
         <div className="p-4 border-t border-border">
           <Button variant="outline" size="sm" className="w-full gap-2" onClick={logout}>
@@ -583,49 +593,49 @@ function AdminDashboard() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         <div className="bg-primary text-primary-foreground py-4 px-6 flex items-center justify-between gap-4">
-          <h1 className="text-xl font-serif font-bold">
-            {activeSection === 'church' ? t.admin.header.church_portal : t.admin.header.ey_management}
-          </h1>
+<h1 className="text-xl font-serif font-bold">
+             {activeSection === 'church' ? t.admin.header.church_portal : activeSection === 'ey' ? t.admin.header.ey_management : t.admin.header.reports}
+           </h1>
           <Button size="sm" variant="secondary" onClick={() => setLanguage(language === "en" ? "am" : "en")}>{language === "en" ? "EN" : "አማ"}</Button>
         </div>
 
         <div className="flex-1 p-6">
-          {activeSection === 'church' ? (
-            <ChurchPortalContent
-              supportList={supportList}
-              memberList={memberList}
-              posts={posts}
-              events={events}
-              loadingSupport={loadingSupport}
-              loadingMembers={loadingMembers}
-              loadingPosts={loadingPosts}
-              loadingEvents={loadingEvents}
-              postForm={postForm}
-              eventForm={eventForm}
-              scriptureForm={scriptureForm}
-              handleCreatePost={handleCreatePost}
-              handleDeletePost={handleDeletePost}
-              handleCreateEvent={handleCreateEvent}
-              handleDeleteEvent={handleDeleteEvent}
-              handleCreateScripture={handleCreateScripture}
-              handleEditPost={handleEditPost}
-              handleEditEvent={handleEditEvent}
-              createPost={createPost}
-              createEvent={createEvent}
-              createScripture={createScripture}
-              editingPost={editingPost}
-              editingEvent={editingEvent}
-              postEditOpen={postEditOpen}
-              eventEditOpen={eventEditOpen}
-              setPostEditOpen={setPostEditOpen}
-              setEventEditOpen={setEventEditOpen}
-              setEditingPost={setEditingPost}
-              setEditingEvent={setEditingEvent}
-              handleSavePost={handleSavePost}
-              handleSaveEvent={handleSaveEvent}
-            />
-          ) : (
-<ExcellentYouthContent
+{activeSection === 'church' ? (
+             <ChurchPortalContent
+               supportList={supportList}
+               memberList={memberList}
+               posts={posts}
+               events={events}
+               loadingSupport={loadingSupport}
+               loadingMembers={loadingMembers}
+               loadingPosts={loadingPosts}
+               loadingEvents={loadingEvents}
+               postForm={postForm}
+               eventForm={eventForm}
+               scriptureForm={scriptureForm}
+               handleCreatePost={handleCreatePost}
+               handleDeletePost={handleDeletePost}
+               handleCreateEvent={handleCreateEvent}
+               handleDeleteEvent={handleDeleteEvent}
+               handleCreateScripture={handleCreateScripture}
+               handleEditPost={handleEditPost}
+               handleEditEvent={handleEditEvent}
+               createPost={createPost}
+               createEvent={createEvent}
+               createScripture={createScripture}
+               editingPost={editingPost}
+               editingEvent={editingEvent}
+               postEditOpen={postEditOpen}
+               eventEditOpen={eventEditOpen}
+               setPostEditOpen={setPostEditOpen}
+               setEventEditOpen={setEventEditOpen}
+               setEditingPost={setEditingPost}
+               setEditingEvent={setEditingEvent}
+               handleSavePost={handleSavePost}
+               handleSaveEvent={handleSaveEvent}
+             />
+           ) : activeSection === 'ey' ? (
+ <ExcellentYouthContent
                eyEventForm={eyEventForm}
                eyRoundForm={eyRoundForm}
                eyCoordinatorForm={eyCoordinatorForm}
@@ -648,12 +658,14 @@ function AdminDashboard() {
                handleEditEyCoordinator={handleEditEyCoordinator}
                handleDeleteEyParticipant={handleDeleteEyParticipant}
                handleEditEyParticipant={handleEditEyParticipant}
-               handleGenerateBadge={(participant: any) => {
-                 setBadgeParticipant(participant);
-                 setShowBadgeModal(true);
-               }}
-             />
-          )}
+handleGenerateBadge={(participant: any) => {
+                  setBadgeParticipant(participant);
+                  setShowBadgeModal(true);
+                }}
+              />
+            ) : activeSection === 'reports' ? (
+              <Reports />
+            ) : null}
         </div>
       </div>
 

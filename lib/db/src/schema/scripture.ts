@@ -3,8 +3,8 @@ import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const scriptureTable = pgTable("scripture", {
   id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
+  verse: text("verse").notNull(),
+  reference: text("reference"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
