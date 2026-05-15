@@ -30,6 +30,10 @@ export function BadgeGenerationModal({
 }: BadgeModalProps) {
   const { t } = useLanguage();
   const [isPrinting, setIsPrinting] = useState(false);
+  const badgeSize = {
+    width: "min(95vw, 4in)",
+    height: "calc(min(95vw, 4in) * 1.375)",
+  };
 
   if (!participant) return null;
 
@@ -56,24 +60,32 @@ export function BadgeGenerationModal({
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Print Badge</title>
     <style>
+      @page {
+        size: 4in 5.5in;
+        margin: 0;
+      }
       body {
         margin: 0;
-        padding: 1rem;
-        background: #f8fafc;
+        padding: 0;
+        background: #ffffff;
         font-family: Inter, system-ui, sans-serif;
         color: #0f172a;
       }
       .badge-root {
-        width: 42rem;
+        width: 4in;
+        height: 5.5in;
         margin: 0 auto;
       }
       .badge {
         position: relative;
+        box-sizing: border-box;
+        width: 4in;
+        height: 5.5in;
         background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
-        border-radius: 1.5rem;
+        border-radius: 0.15in;
         overflow: hidden;
         color: #ffffff;
-        padding: 1rem;
+        padding: 0.22in;
       }
       .badge::before {
         content: "";
@@ -102,8 +114,8 @@ export function BadgeGenerationModal({
         margin-bottom: 0.5rem;
       }
       .logo-circle {
-        width: 7.25rem;
-        height: 7.25rem;
+        width: 0.95in;
+        height: 0.95in;
         border-radius: 9999px;
         background: rgba(255,255,255,0.14);
         border: 2px solid rgba(255,255,255,0.3);
@@ -111,8 +123,8 @@ export function BadgeGenerationModal({
         place-items: center;
       }
       .logo-circle img {
-        width: 5rem;
-        height: 5rem;
+        width: 0.7in;
+        height: 0.7in;
         object-fit: cover;
         border-radius: 9999px;
       }
@@ -123,7 +135,7 @@ export function BadgeGenerationModal({
       }
       .badge-header h2 {
         margin: 0.25rem 0 0;
-        font-size: 1.125rem;
+        font-size: 0.18in;
         font-weight: 700;
       }
       .badge-header p {
@@ -134,7 +146,7 @@ export function BadgeGenerationModal({
       .event-title {
         margin: 0.75rem 0 0.25rem;
         text-align: center;
-        font-size: 1.25rem;
+        font-size: 0.2in;
         font-weight: 700;
       }
       .round-badge {
@@ -160,7 +172,7 @@ export function BadgeGenerationModal({
         font-weight: 600;
       }
       .participant-name {
-        font-size: 1.5rem;
+        font-size: 0.24in;
         font-weight: 800;
         margin: 0 0 0.75rem;
         text-align: center;
@@ -169,7 +181,7 @@ export function BadgeGenerationModal({
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.5rem;
-        font-size: 0.875rem;
+        font-size: 0.13in;
       }
       .info-item {
         line-height: 1.35;
@@ -206,11 +218,11 @@ export function BadgeGenerationModal({
         }
         .badge-root {
           margin: 0;
-          width: 42rem;
+          width: 4in;
+          height: 5.5in;
         }
         .badge {
           box-shadow: none;
-          border-radius: 0;
         }
       }
     </style>
@@ -307,7 +319,10 @@ export function BadgeGenerationModal({
         <div className="space-y-3">
           {/* Badge Preview */}
           <div className="flex justify-center py-3 bg-gray-50 rounded-lg print:bg-white badge-print-area">
-            <div className="max-w-[min(95vw,42rem)] bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 rounded-2xl shadow-2xl p-4 text-white relative overflow-hidden print:shadow-none">
+            <div
+              className="badge-preview-card bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 rounded-xl shadow-2xl p-5 text-white relative overflow-hidden print:shadow-none"
+              style={badgeSize}
+            >
               {/* Top accent bar */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300"></div>
 
@@ -320,8 +335,8 @@ export function BadgeGenerationModal({
                 {/* Header with Logo */}
                 <div className="text-center border-b border-white/20 pb-2">
                   <div className="flex justify-center mb-2">
-                    <div className="bg-white/15 rounded-full p-4 border-2 border-white/30">
-                      <img src={excellentYouthImage} alt="Excellent Youth logo" className="h-20 w-20 rounded-full object-cover" />
+                    <div className="bg-white/15 rounded-full p-3 border-2 border-white/30">
+                      <img src={excellentYouthImage} alt="Excellent Youth logo" className="h-14 w-14 rounded-full object-cover" />
                     </div>
                   </div>
                   <h2 className="text-lg font-bold">መልካም ወጣት</h2>
@@ -330,7 +345,7 @@ export function BadgeGenerationModal({
 
                 {/* Event Information */}
                 <div className="text-center">
-                  <h3 className="text-xl font-bold mb-1">{event?.title || "Event"}</h3>
+                  <h3 className="text-lg font-bold mb-1">{event?.title || "Event"}</h3>
                   <div className="inline-block bg-white/10 px-3 py-1 rounded-full text-xs border border-white/20">
                     ዙር {round?.roundNumber || "-"}
                   </div>
@@ -340,7 +355,7 @@ export function BadgeGenerationModal({
                 <div className="space-y-3 border-t border-b border-white/20 py-3">
                   <div className="text-center">
                     <p className="text-xs text-blue-200 mb-1">የተሳታፊ ሙሉ ስም</p>
-                    <p className="text-xl font-bold">{participantName}</p>
+                    <p className="text-lg font-bold">{participantName}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-sm">
@@ -441,6 +456,10 @@ export function BadgeGenerationModal({
       {/* Print Styles */}
       <style>{`
         @media print {
+          @page {
+            size: 4in 5.5in;
+            margin: 0;
+          }
           body {
             margin: 0;
             padding: 0;
@@ -468,7 +487,14 @@ export function BadgeGenerationModal({
             top: 0 !important;
             left: 0 !important;
             width: 100% !important;
-          }          .print\\:hidden {
+            padding: 0 !important;
+          }
+          .badge-preview-card {
+            width: 4in !important;
+            height: 5.5in !important;
+            max-width: none !important;
+          }
+          .print\\:hidden {
             display: none !important;
           }
           .print\\:bg-white {

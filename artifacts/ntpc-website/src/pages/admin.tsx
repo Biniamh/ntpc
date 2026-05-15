@@ -36,10 +36,12 @@ import {
   useUpdateEyCoordinator,
   useUpdateEyParticipant,
   useDeleteEyParticipant,
+  useListDepartments,
   getListEyEventsQueryKey,
   getListEyRoundsQueryKey,
   getListEyParticipantsQueryKey,
   getListEyCoordinatorsQueryKey,
+  getListDepartmentsQueryKey,
 } from "@workspace/api-client-react";
 import { useAuthStore } from "@/hooks/use-auth";
 import { useLanguage } from "@/lib/language-provider";
@@ -53,7 +55,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut, Trash2, Plus, BookOpen, Calendar, Users, HeartHandshake, BookMarked, Shield, Church, Star, Target, UserCheck, BarChart3 } from "lucide-react";
+import { LogOut, Trash2, Plus, BookOpen, Calendar, Users, HeartHandshake, BookMarked, Shield, Church, Star, Target, UserCheck, BarChart3, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { DataTable } from "@/components/DataTable";
 import { PostEditDialog } from "@/components/PostEditDialog";
@@ -89,6 +91,16 @@ const scriptureSchema = z.object({
   reference: z.string().min(1, "Reference required"),
 });
 type ScriptureValues = z.infer<typeof scriptureSchema>;
+
+const departmentSchema = z.object({
+  name: z.string().min(1, "Name required"),
+  description: z.string().min(1, "Description required"),
+  groupPhotoUrl: z.string().optional(),
+  members: z.string().optional(),
+  activities: z.string().optional(),
+  meetingTime: z.string().optional(),
+});
+type DepartmentValues = z.infer<typeof departmentSchema>;
 
 const eyEventSchema = z.object({
   title: z.string().min(1, "Title required"),
@@ -201,6 +213,7 @@ function AdminDashboard() {
   const { data: memberList = [], isLoading: loadingMembers } = useListMembershipRequests();
   const { data: posts = [], isLoading: loadingPosts } = useListPosts();
   const { data: events = [], isLoading: loadingEvents } = useListEvents();
+  const { data: departments = [], isLoading: loadingDepartments } = useListDepartments();
 
   // EY hooks
   const { data: eyEvents = [], isLoading: loadingEyEvents } = useListEyEvents();
@@ -215,6 +228,28 @@ function AdminDashboard() {
   const deleteEvent = useDeleteEvent();
   const updateEvent = useUpdateEvent();
   const createScripture = useCreateScripture();
+  const createDepartment = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch("/api/departments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to create department");
+      return response.json();
+    },
+  });
+  const updateDepartment = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await fetch(`/api/departments/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to update department");
+      return response.json();
+    },
+  });
 
   // EY mutations
   const createEyEvent = useCreateEyEvent();
@@ -263,18 +298,22 @@ function AdminDashboard() {
   const [editingEyRound, setEditingEyRound] = useState<any>(null);
   const [editingEyParticipant, setEditingEyParticipant] = useState<any>(null);
   const [editingEyCoordinator, setEditingEyCoordinator] = useState<any>(null);
+  const [editingDepartment, setEditingDepartment] = useState<any>(null);
   const [postEditOpen, setPostEditOpen] = useState(false);
   const [eventEditOpen, setEventEditOpen] = useState(false);
   const [eyEventEditOpen, setEyEventEditOpen] = useState(false);
   const [eyRoundEditOpen, setEyRoundEditOpen] = useState(false);
   const [eyParticipantEditOpen, setEyParticipantEditOpen] = useState(false);
   const [eyCoordinatorEditOpen, setEyCoordinatorEditOpen] = useState(false);
+  const [departmentEditOpen, setDepartmentEditOpen] = useState(false);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const [badgeParticipant, setBadgeParticipant] = useState<any>(null);
 
   const postForm = useForm<PostValues>({ resolver: zodResolver(postSchema), defaultValues: { title: "", highlights: "", photoUrl: "", facebookUrl: "", youtubeUrl: "" } });
   const eventForm = useForm<EventValues>({ resolver: zodResolver(eventSchema), defaultValues: { title: "", description: "", date: "", imageUrl: "" } });
   const scriptureForm = useForm<ScriptureValues>({ resolver: zodResolver(scriptureSchema), defaultValues: { verse: "", reference: "" } });
+  const departmentForm = useForm<DepartmentValues>({ resolver: zodResolver(departmentSchema), defaultValues: { name: "", description: "", groupPhotoUrl: "", members: "", activities: "", meetingTime: "" } });
+  const departmentEditForm = useForm<DepartmentValues>({ resolver: zodResolver(departmentSchema), defaultValues: { name: "", description: "", groupPhotoUrl: "", members: "", activities: "", meetingTime: "" } });
 
   // EY forms
   const eyEventForm = useForm<EyEventValues>({ resolver: zodResolver(eyEventSchema), defaultValues: { title: "", description: "", startDate: "", endDate: "", imageUrl: "", type: "", year: new Date().getFullYear() } });
@@ -318,6 +357,67 @@ function AdminDashboard() {
       onSuccess: () => { queryClient.invalidateQueries({ queryKey: getGetLatestScriptureQueryKey() }); scriptureForm.reset(); toast({ title: t.admin.scripture.updated }); },
       onError: () => toast({ title: t.admin.common.error, variant: "destructive" }),
     });
+  }
+
+  function getDepartmentPayload(data: DepartmentValues) {
+    return {
+      name: data.name,
+      description: data.description,
+      groupPhotoUrl: data.groupPhotoUrl || undefined,
+      members: (data.members || "")
+        .split(/\r?\n/)
+        .map((member) => member.trim())
+        .filter(Boolean),
+      activities: data.activities || undefined,
+      meetingTime: data.meetingTime || undefined,
+    };
+  }
+
+  function handleCreateDepartment(data: DepartmentValues) {
+    const payload = getDepartmentPayload(data);
+
+    createDepartment.mutate(payload, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListDepartmentsQueryKey() });
+        departmentForm.reset({ name: "", description: "", groupPhotoUrl: "", members: "", activities: "", meetingTime: "" });
+        toast({ title: "Department created" });
+      },
+      onError: () => toast({ title: "Error creating department", variant: "destructive" }),
+    });
+  }
+
+  function handleSaveDepartment(data: DepartmentValues) {
+    if (!editingDepartment) return;
+
+    updateDepartment.mutate({ id: editingDepartment.id, data: getDepartmentPayload(data) }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListDepartmentsQueryKey() });
+        setDepartmentEditOpen(false);
+        setEditingDepartment(null);
+        departmentEditForm.reset({ name: "", description: "", groupPhotoUrl: "", members: "", activities: "", meetingTime: "" });
+        toast({ title: "Department updated" });
+      },
+      onError: () => toast({ title: "Error updating department", variant: "destructive" }),
+    });
+  }
+
+  function handleEditDepartment(department: any) {
+    setEditingDepartment(department);
+    departmentEditForm.reset({
+      name: department.name || "",
+      description: department.description || "",
+      groupPhotoUrl: department.groupPhotoUrl || "",
+      members: Array.isArray(department.members) ? department.members.join("\n") : "",
+      activities: department.activities || "",
+      meetingTime: department.meetingTime || "",
+    });
+    setDepartmentEditOpen(true);
+  }
+
+  function handleCancelDepartmentEdit() {
+    setEditingDepartment(null);
+    setDepartmentEditOpen(false);
+    departmentEditForm.reset({ name: "", description: "", groupPhotoUrl: "", members: "", activities: "", meetingTime: "" });
   }
 
   function handleEditPost(post: any) {
@@ -606,23 +706,35 @@ function AdminDashboard() {
                memberList={memberList}
                posts={posts}
                events={events}
+               departments={departments}
                loadingSupport={loadingSupport}
                loadingMembers={loadingMembers}
                loadingPosts={loadingPosts}
                loadingEvents={loadingEvents}
+               loadingDepartments={loadingDepartments}
                postForm={postForm}
                eventForm={eventForm}
                scriptureForm={scriptureForm}
+               departmentForm={departmentForm}
+               departmentEditForm={departmentEditForm}
                handleCreatePost={handleCreatePost}
                handleDeletePost={handleDeletePost}
                handleCreateEvent={handleCreateEvent}
                handleDeleteEvent={handleDeleteEvent}
                handleCreateScripture={handleCreateScripture}
+               handleCreateDepartment={handleCreateDepartment}
+               handleSaveDepartment={handleSaveDepartment}
+               handleEditDepartment={handleEditDepartment}
+               handleCancelDepartmentEdit={handleCancelDepartmentEdit}
                handleEditPost={handleEditPost}
                handleEditEvent={handleEditEvent}
                createPost={createPost}
                createEvent={createEvent}
                createScripture={createScripture}
+               createDepartment={createDepartment}
+               updateDepartment={updateDepartment}
+               editingDepartment={editingDepartment}
+               departmentEditOpen={departmentEditOpen}
                editingPost={editingPost}
                editingEvent={editingEvent}
                postEditOpen={postEditOpen}
@@ -945,23 +1057,35 @@ function ChurchPortalContent({
   memberList,
   posts,
   events,
+  departments,
   loadingSupport,
   loadingMembers,
   loadingPosts,
   loadingEvents,
+  loadingDepartments,
   postForm,
   eventForm,
   scriptureForm,
+  departmentForm,
+  departmentEditForm,
   handleCreatePost,
   handleDeletePost,
   handleCreateEvent,
   handleDeleteEvent,
   handleCreateScripture,
+  handleCreateDepartment,
+  handleSaveDepartment,
+  handleEditDepartment,
+  handleCancelDepartmentEdit,
   handleEditPost,
   handleEditEvent,
   createPost,
   createEvent,
   createScripture,
+  createDepartment,
+  updateDepartment,
+  editingDepartment,
+  departmentEditOpen,
   editingPost,
   editingEvent,
   postEditOpen,
@@ -980,6 +1104,7 @@ function ChurchPortalContent({
       <TabsList className="flex flex-wrap h-auto gap-1 mb-8">
         <TabsTrigger value="posts" className="gap-2"><BookOpen className="h-4 w-4" /> {t.admin.church.weekly_sermons}</TabsTrigger>
         <TabsTrigger value="events" className="gap-2"><Calendar className="h-4 w-4" /> {t.admin.church.events}</TabsTrigger>
+        <TabsTrigger value="departments" className="gap-2"><Building2 className="h-4 w-4" /> Departments ({departments.length})</TabsTrigger>
         <TabsTrigger value="scripture" className="gap-2"><BookMarked className="h-4 w-4" /> {t.admin.church.scripture}</TabsTrigger>
         <TabsTrigger value="support" className="gap-2"><HeartHandshake className="h-4 w-4" /> {t.admin.church.support_submissions} ({supportList.length})</TabsTrigger>
         <TabsTrigger value="members" className="gap-2"><Users className="h-4 w-4" /> {t.admin.church.membership_requests} ({memberList.length})</TabsTrigger>
@@ -1092,6 +1217,122 @@ function ChurchPortalContent({
             />
           </CardContent>
         </Card>
+      </TabsContent>
+
+      {/* DEPARTMENTS */}
+      <TabsContent value="departments" className="space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Add new department
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...departmentForm}>
+              <form onSubmit={departmentForm.handleSubmit(handleCreateDepartment)} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField control={departmentForm.control} name="name" render={({ field }) => (
+                    <FormItem><FormLabel>Name</FormLabel><FormControl><Input data-testid="input-departmentName" placeholder="Department name" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={departmentForm.control} name="meetingTime" render={({ field }) => (
+                    <FormItem><FormLabel>Meeting time</FormLabel><FormControl><Input data-testid="input-departmentMeetingTime" placeholder="Sundays, 10:00 AM" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                </div>
+                <FormField control={departmentForm.control} name="description" render={({ field }) => (
+                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea data-testid="input-departmentDescription" rows={3} placeholder="What this department does" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField control={departmentForm.control} name="groupPhotoUrl" render={({ field }) => (
+                    <FormItem><FormLabel>Group photo URL</FormLabel><FormControl><Input data-testid="input-departmentPhotoUrl" placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={departmentForm.control} name="activities" render={({ field }) => (
+                    <FormItem><FormLabel>Activities</FormLabel><FormControl><Input data-testid="input-departmentActivities" placeholder="Choir practice, outreach, training" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                </div>
+                <FormField control={departmentForm.control} name="members" render={({ field }) => (
+                  <FormItem><FormLabel>Members</FormLabel><FormControl><Textarea data-testid="input-departmentMembers" rows={4} placeholder="One member per line" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <div className="flex flex-wrap gap-2">
+                  <Button type="submit" className="rounded-full gap-2" disabled={createDepartment.isPending || updateDepartment.isPending} data-testid="button-saveDepartment">
+                    <Plus className="h-4 w-4" /> {createDepartment.isPending ? t.admin.common.loading : "Add department"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Existing departments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DataTable
+              data={departments.map((department: any) => ({
+                ...department,
+                membersCount: Array.isArray(department.members) ? department.members.length : 0,
+              }))}
+              columns={[
+                { key: "name", header: "Name", searchable: true, sortable: true },
+                { key: "description", header: "Description", searchable: true, render: (value) => (
+                  <div className="max-w-xs truncate" title={value}>{value}</div>
+                )},
+                { key: "meetingTime", header: "Meeting time", searchable: true },
+                { key: "membersCount", header: "Members", sortable: true },
+                { key: "activities", header: "Activities", searchable: true, render: (value) => (
+                  <div className="max-w-xs truncate" title={value}>{value}</div>
+                )},
+              ]}
+              searchPlaceholder="Search departments"
+              onEdit={handleEditDepartment}
+              loading={loadingDepartments}
+              exportFileName="departments"
+            />
+          </CardContent>
+        </Card>
+
+        <Dialog open={departmentEditOpen} onOpenChange={(open) => {
+          if (!open) handleCancelDepartmentEdit();
+        }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Update department</DialogTitle>
+            </DialogHeader>
+            <Form {...departmentEditForm}>
+              <form onSubmit={departmentEditForm.handleSubmit(handleSaveDepartment)} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField control={departmentEditForm.control} name="name" render={({ field }) => (
+                    <FormItem><FormLabel>Name</FormLabel><FormControl><Input data-testid="input-editDepartmentName" placeholder="Department name" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={departmentEditForm.control} name="meetingTime" render={({ field }) => (
+                    <FormItem><FormLabel>Meeting time</FormLabel><FormControl><Input data-testid="input-editDepartmentMeetingTime" placeholder="Sundays, 10:00 AM" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                </div>
+                <FormField control={departmentEditForm.control} name="description" render={({ field }) => (
+                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea data-testid="input-editDepartmentDescription" rows={3} placeholder="What this department does" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField control={departmentEditForm.control} name="groupPhotoUrl" render={({ field }) => (
+                    <FormItem><FormLabel>Group photo URL</FormLabel><FormControl><Input data-testid="input-editDepartmentPhotoUrl" placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={departmentEditForm.control} name="activities" render={({ field }) => (
+                    <FormItem><FormLabel>Activities</FormLabel><FormControl><Input data-testid="input-editDepartmentActivities" placeholder="Choir practice, outreach, training" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                </div>
+                <FormField control={departmentEditForm.control} name="members" render={({ field }) => (
+                  <FormItem><FormLabel>Members</FormLabel><FormControl><Textarea data-testid="input-editDepartmentMembers" rows={4} placeholder="One member per line" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={handleCancelDepartmentEdit}>Cancel</Button>
+                  <Button type="submit" disabled={updateDepartment.isPending}>
+                    {updateDepartment.isPending ? t.admin.common.loading : "Save changes"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </TabsContent>
 
       {/* SCRIPTURE */}
