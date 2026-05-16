@@ -117,10 +117,14 @@ export default function Eyregister() {
     null
   );
 
-  const [isVerifying, setIsVerifying] = useState(false);
-
-  const [isProcessingPayment, setIsProcessingPayment] =
-    useState(false);
+   const [isVerifying, setIsVerifying] = useState(false);
+   
+   const [isProcessingPayment, setIsProcessingPayment] =
+     useState(false);
+     
+   const [isVerifyingTelebirr, setIsVerifyingTelebirr] = useState(false);
+   
+   const [telebirrPaymentVerified, setTelebirrPaymentVerified] = useState(false);
 
   const [roundCapacityStatus, setRoundCapacityStatus] =
     useState<any>(null);
@@ -161,46 +165,58 @@ export default function Eyregister() {
     );
   }, [eyRounds, selectedEventId]);
 
-  useEffect(() => {
-    if (selectedRoundId > 0) {
-      loadSelectedRoundCapacity(selectedRoundId);
-    }
-  }, [selectedRoundId]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const state = params.get("state");
-
-    if (!code || !state) return;
-
-    const storedState = sessionStorage.getItem("fayda_state");
-    const codeVerifier = sessionStorage.getItem("fayda_code_verifier");
-
-    if (state !== storedState || !codeVerifier) {
-      toast({
-        title: t.ey_register.error,
-        description: t.ey_register.something_wrong,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    verifyFayda(undefined, { code, codeVerifier }).then((verified) => {
-      if (!verified) return;
-
-      setFaydaVerified(true);
-      setStep(2);
-      toast({
-        title: t.common.success,
-        description: t.ey_register.national_id_verified,
-      });
-
-      sessionStorage.removeItem("fayda_state");
-      sessionStorage.removeItem("fayda_code_verifier");
-      window.history.replaceState({}, "", window.location.pathname);
-    });
-  }, []);
+   useEffect(() => {
+     if (selectedRoundId > 0) {
+       loadSelectedRoundCapacity(selectedRoundId);
+     }
+   }, [selectedRoundId]);
+ 
+   useEffect(() => {
+     const params = new URLSearchParams(window.location.search);
+     const code = params.get("code");
+     const state = params.get("state");
+ 
+     if (!code || !state) return;
+ 
+     const storedState = sessionStorage.getItem("fayda_state");
+     const codeVerifier = sessionStorage.getItem("fayda_code_verifier");
+ 
+     if (state !== storedState || !codeVerifier) {
+       toast({
+         title: t.ey_register.error,
+         description: t.ey_register.something_wrong,
+         variant: "destructive",
+       });
+       return;
+     }
+ 
+     verifyFayda(undefined, { code, codeVerifier }).then((verified) => {
+       if (!verified) return;
+ 
+       setFaydaVerified(true);
+       setStep(2);
+       toast({
+         title: t.common.success,
+         description: t.ey_register.national_id_verified,
+       });
+ 
+       sessionStorage.removeItem("fayda_state");
+       sessionStorage.removeItem("fayda_code_verifier");
+       window.history.replaceState({}, "", window.location.pathname);
+     });
+   }, []);
+   
+   useEffect(() => {
+     const params = new URLSearchParams(window.location.search);
+     const transactionId = params.get("transactionId");
+     const status = params.get("status");
+     
+     // Check if we're returning from Telebirr payment
+     if (transactionId && paymentMethod === "telebirr") {
+       // Verify the payment
+       verifyTelebirrPayment(transactionId);
+     }
+   }, [paymentMethod]);
 
   async function fetchRoundCapacity(roundId: number) {
     try {
@@ -284,70 +300,117 @@ export default function Eyregister() {
     }
   }
 
-  async function processPayment(paymentMethod: string) {
-    if (paymentMethod === "telebirr") {
+    async function processPayment(paymentMethod: string) {
+      if (paymentMethod === "telebirr") {
+        // Check if we're in mock mode
+        const isMockEnabled = import.meta.env.VITE_TELEBIRR_MOCK_ENABLED === "true";
+        
+        if (isMockEnabled) {
+          // In mock mode, automatically verify payment
+          setIsVerifyingTelebirr(true);
+          setTelebirrPaymentVerified(true);
+          // Don't change step - let user continue through normal flow
+          return true;
+        } else {
+          // In real mode, initiate payment and wait for callback
+          try {
+            const response = await fetch("/api/telebirr/initiate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                amount: 100,
+                orderTitle: "Excellent Youth Registration",
+                merchOrderId: `EY-${Date.now()}`,
+                callbackInfo: "EY Registration Payment",
+              }),
+            });
+
+            if (!response.ok) {
+              toast({
+                title: t.ey_register.payment_failed,
+                description: t.ey_register.unable_verify_payment,
+                variant: "destructive",
+              });
+              return false;
+            }
+
+            const result = await response.json();
+            
+            if (result.success && result.paymentUrl) {
+              // Redirect to Telebirr payment page
+              window.location.assign(result.paymentUrl);
+              return true;
+            } else {
+              toast({
+                title: t.ey_register.payment_failed,
+                description: t.ey_register.unable_verify_payment,
+                variant: "destructive",
+              });
+              return false;
+            }
+          } catch {
+            toast({
+              title: t.ey_register.payment_failed,
+              description: t.ey_register.unable_verify_payment,
+              variant: "destructive",
+            });
+            return false;
+          }
+        }
+      }
+
+      setIsProcessingPayment(true);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      setIsProcessingPayment(false);
+      return true;
+    }
+
+   async function loadSelectedRoundCapacity(roundId: number) {
+     const capacity = await fetchRoundCapacity(roundId);
+ 
+     if (capacity) {
+       setRoundCapacityStatus(capacity);
+     }
+   }
+   
+    async function verifyTelebirrPayment(transactionId: string) {
+      setIsVerifyingTelebirr(true);
       try {
-        const response = await fetch("/api/telebirr/initiate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: 100,
-            orderTitle: "Excellent Youth Registration",
-            merchOrderId: `EY-${Date.now()}`,
-            callbackInfo: "EY Registration Payment",
-          }),
+        const response = await fetch(`/api/telebirr/verify/${transactionId}`, {
+          method: "GET",
         });
 
         if (!response.ok) {
-          toast({
-            title: t.ey_register.payment_failed,
-            description: t.ey_register.unable_verify_payment,
-            variant: "destructive",
-          });
-          return false;
+          throw new Error("Failed to verify payment");
         }
 
         const result = await response.json();
         
-        // In mock mode, paymentUrl is empty and status is COMPLETED - proceed without redirect
-        if (result.success && (!result.paymentUrl || result.status === "COMPLETED")) {
-          return true;
-        }
-        
-        if (result.success && result.paymentUrl) {
-          window.location.assign(result.paymentUrl);
-          return true;
+        if (result.success && result.verified) {
+          setTelebirrPaymentVerified(true);
+          setIsVerifyingTelebirr(false);
+          toast({
+            title: t.common.success,
+            description: t.ey_register.payment_verified,
+          });
+          // Don't change step - let user continue through normal flow
         } else {
           toast({
             title: t.ey_register.payment_failed,
             description: t.ey_register.unable_verify_payment,
             variant: "destructive",
           });
-          return false;
+          setIsVerifyingTelebirr(false);
         }
-      } catch {
+      } catch (error) {
         toast({
           title: t.ey_register.payment_failed,
           description: t.ey_register.unable_verify_payment,
           variant: "destructive",
         });
-        return false;
+        setIsVerifyingTelebirr(false);
       }
     }
-
-    setIsProcessingPayment(true);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    setIsProcessingPayment(false);
-    return true;
-  }
-
-  async function loadSelectedRoundCapacity(roundId: number) {
-    const capacity = await fetchRoundCapacity(roundId);
-
-    if (capacity) {
-      setRoundCapacityStatus(capacity);
-    }
-  }
 
   async function handleSignInWithFayda() {
     setIsVerifying(true);
@@ -412,61 +475,85 @@ export default function Eyregister() {
     }
   }
 
-  async function onSubmit(data: FormValues) {
-    try {
-      const paymentSuccess = await processPayment(data.paymentMethod);
+   async function onSubmit(data: FormValues) {
+     try {
+       // Handle Telebirr payment verification
+       if (data.paymentMethod === "telebirr") {
+         // If already verified, proceed with registration
+         if (telebirrPaymentVerified) {
+           // Proceed with registration (fall through to registration logic below)
+         } else {
+           // Initiate Telebirr payment process
+           const paymentSuccess = await processPayment(data.paymentMethod);
+           if (!paymentSuccess) {
+             toast({
+               title: t.ey_register.payment_failed,
+               description: t.ey_register.unable_verify_payment,
+               variant: "destructive",
+             });
+             return;
+           }
+           // For Telebirr, processPayment either:
+           // - In mock mode: sets telebirrPaymentVerified=true and moves to step 2
+           // - In real mode: redirects to Telebirr payment page
+           // In both cases, we DON'T proceed with registration yet
+           return;
+         }
+       } else {
+         // Handle bank payment (existing logic)
+         const paymentSuccess = await processPayment(data.paymentMethod);
+         if (!paymentSuccess) {
+           toast({
+             title: t.ey_register.payment_failed,
+             description: t.ey_register.unable_verify_payment,
+             variant: "destructive",
+           });
+           return;
+         }
+       }
 
-      if (!paymentSuccess) {
-        toast({
-          title: t.ey_register.payment_failed,
-          description: t.ey_register.unable_verify_payment,
-          variant: "destructive",
-        });
+       // Proceed with registration (for bank or verified telebirr)
+       createParticipant.mutate(
+         {
+           data,
+         },
+         {
+           onSuccess: (participant) => {
+             setRegistrationNumber(
+               participant.registrationNumber
+             );
 
-        return;
-      }
+             setCoordinatorId(
+               participant.coordinatorId?.toString() || "N/A"
+             );
 
-      createParticipant.mutate(
-        {
-          data,
-        },
-        {
-          onSuccess: (participant) => {
-            setRegistrationNumber(
-              participant.registrationNumber
-            );
+             setStep(4);
 
-            setCoordinatorId(
-              participant.coordinatorId?.toString() || "N/A"
-            );
+             toast({
+               title: t.common.success,
+               description:
+                 participant.registrationNumber,
+             });
+           },
 
-            setStep(4);
-
-            toast({
-              title: t.common.success,
-              description:
-                participant.registrationNumber,
-            });
-          },
-
-          onError: () => {
-            toast({
-              title: t.ey_register.registration_failed,
-              description:
-                t.ey_register.unable_complete_registration,
-              variant: "destructive",
-            });
-          },
-        }
-      );
-    } catch {
-      toast({
-        title: t.ey_register.error,
-        description: t.ey_register.something_wrong,
-        variant: "destructive",
-      });
-    }
-  }
+           onError: () => {
+             toast({
+               title: t.ey_register.registration_failed,
+               description:
+                 t.ey_register.unable_complete_registration,
+               variant: "destructive",
+             });
+           },
+         }
+       );
+     } catch {
+       toast({
+         title: t.ey_register.error,
+         description: t.ey_register.something_wrong,
+         variant: "destructive",
+       });
+     }
+   }
 
   const progress = (step / 4) * 100;
 
@@ -898,59 +985,61 @@ export default function Eyregister() {
                       </p>
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="paymentMethod"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                              {t.ey_register.payment_method}
-                          </FormLabel>
+                     <FormField
+                       control={form.control}
+                       name="paymentMethod"
+                       render={({ field }) => (
+                         <FormItem>
+                           <FormLabel>
+                               {t.ey_register.payment_method}
+                           </FormLabel>
 
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={
-                                field.onChange
-                              }
-                              defaultValue={
-                                field.value
-                              }
-                              className="grid md:grid-cols-2 gap-4"
-                            >
-                              <div className="border rounded-2xl p-6">
-                                <div className="flex items-center gap-3">
-                                  <RadioGroupItem
-                                    value="bank"
-                                    id="bank"
-                                  />
+                           <FormControl>
+                             <div className="grid md:grid-cols-2 gap-4">
+                               <div className="border rounded-2xl p-6">
+                                 <div className="flex items-center gap-3">
+                                   <input
+                                     type="radio"
+                                     value="bank"
+                                     checked={field.value === "bank"}
+                                     onChange={(e) => {
+                                       field.onChange(e.target.value);
+                                     }}
+                                     id="bank"
+                                   />
 
-                                  <Building2 className="h-5 w-5" />
+                                   <Building2 className="h-5 w-5" />
 
-                                  <label htmlFor="bank">
-                                    {t.ey_register.bank_transfer}
-                                  </label>
-                                </div>
-                              </div>
+                                   <label htmlFor="bank">
+                                     {t.ey_register.bank_transfer}
+                                   </label>
+                                 </div>
+                               </div>
 
-                              <div className="border rounded-2xl p-6">
-                                <div className="flex items-center gap-3">
-                                  <RadioGroupItem
-                                    value="telebirr"
-                                    id="telebirr"
-                                  />
+                               <div className="border rounded-2xl p-6">
+                                 <div className="flex items-center gap-3">
+                                   <input
+                                     type="radio"
+                                     value="telebirr"
+                                     checked={field.value === "telebirr"}
+                                     onChange={(e) => {
+                                       field.onChange(e.target.value);
+                                     }}
+                                     id="telebirr"
+                                   />
 
-                                  <CreditCard className="h-5 w-5" />
+                                   <CreditCard className="h-5 w-5" />
 
-                                  <label htmlFor="telebirr">
-                                    {t.ey_register.telebirr}
-                                  </label>
-                                </div>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                                   <label htmlFor="telebirr">
+                                     {t.ey_register.telebirr}
+                                   </label>
+                                 </div>
+                               </div>
+                             </div>
+                           </FormControl>
+                         </FormItem>
+                       )}
+                     />
 
                     {paymentMethod === "bank" && (
                       <div className="mt-6">
@@ -975,31 +1064,48 @@ export default function Eyregister() {
                       </div>
                     )}
 
-                    <div className="flex justify-between mt-10">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() =>
-                          setStep(2)
-                        }
-                      >
-                        <ChevronLeft className="mr-2 h-4 w-4" />
-                        {t.ey_register.back}
-                      </Button>
+                     <div className="flex justify-between mt-10">
+                       <Button
+                         type="button"
+                         variant="outline"
+                         onClick={() =>
+                           setStep(2)
+                         }
+                       >
+                         <ChevronLeft className="mr-2 h-4 w-4" />
+                         {t.ey_register.back}
+                       </Button>
 
-                      <Button
-                        type="submit"
-                        disabled={
-                          isProcessingPayment
-                        }
-                      >
-                        {isProcessingPayment
-                          ? t.ey_register.processing
-                          : t.ey_register.complete_registration}
-
-                        <CheckCircle2 className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
+                        {paymentMethod === "telebirr" ? (
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              // Trigger Telebirr payment process
+                              onSubmit(form.getValues());
+                            }}
+                            disabled={
+                              isProcessingPayment || isVerifyingTelebirr
+                            }
+                          >
+                            {isProcessingPayment || isVerifyingTelebirr
+                              ? t.ey_register.processing
+                              : t.ey_register.pay_with_telebirr}
+                            <CreditCard className="ml-2 h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            type="submit"
+                            disabled={
+                              isProcessingPayment
+                            }
+                          >
+                            {isProcessingPayment
+                              ? t.ey_register.processing
+                              : t.ey_register.complete_registration}
+                            <CheckCircle2 className="ml-2 h-4 w-4" />
+                          </Button>
+                        )}
+                     </div>
                   </CardContent>
                 </Card>
               )}
