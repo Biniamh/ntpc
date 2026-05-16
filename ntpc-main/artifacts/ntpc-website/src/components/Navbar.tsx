@@ -12,19 +12,20 @@ export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const links = [
-    { href: "/", label: t.nav.home },
-    { href: "/about", label: t.nav.about },
-    { href: "/departments", label: t.nav.departments },
-    { href: "/programs", label: t.nav.programs },
-    { href: "/events", label: t.nav.events },
-    { href: "/posts", label: t.nav.posts },
-    { href: "/youth", label: t.nav.youth },
-    { href: "/support", label: t.nav.support },
-    { href: "/join", label: t.nav.join },
-    { href: "/contact", label: t.nav.contact },
-    { href: "/ey-register" },
-  ];
+const links = [
+     { href: "/", label: t.nav.home },
+     { href: "/about", label: t.nav.about },
+     { href: "/departments", label: t.nav.departments },
+     { href: "/programs", label: t.nav.programs },
+     { href: "/events", label: t.nav.events },
+     { href: "/posts", label: t.nav.posts },
+     { href: "/youth", label: t.nav.youth },
+     { href: "/support", label: t.nav.support },
+     { href: "/join", label: t.nav.join },
+     { href: "/contact", label: t.nav.contact },
+     { href: "/ey-register" },
+     { href: "/reports", label: t.nav.reports },
+   ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

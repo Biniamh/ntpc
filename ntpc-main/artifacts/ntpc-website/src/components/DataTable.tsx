@@ -27,6 +27,7 @@ interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
   searchPlaceholder?: string;
+  searchByLabel?: string;
   searchByOptions?: SearchByOption[];
   searchBy?: string;
   searchByValue?: Record<string, string>;
@@ -45,6 +46,7 @@ export function DataTable<T extends { id: number | string }>({
   data,
   columns,
   searchPlaceholder = "Search...",
+  searchByLabel = "Search by",
   searchByOptions,
   searchBy,
   searchByValue = {},
@@ -309,7 +311,7 @@ export function DataTable<T extends { id: number | string }>({
         {searchByOptions && (
           <div className="flex items-center gap-2">
             <label htmlFor="search-by" className="text-sm text-muted-foreground">
-              Search by
+              {searchByLabel}
             </label>
             <select
               id="search-by"

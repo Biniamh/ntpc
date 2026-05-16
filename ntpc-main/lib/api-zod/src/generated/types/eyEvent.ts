@@ -10,7 +10,8 @@ export interface EyEvent {
   id: number;
   title: string;
   description: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   imageUrl?: string;
   type: string;
   year: number;

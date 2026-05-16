@@ -52,12 +52,13 @@ import {
   ChevronRight,
   ChevronLeft,
   Building2,
+  LogIn,
 } from "lucide-react";
 
 import excellentyouth from "@/assets/excellentyouth.jpeg";
 
 const schema = z.object({
-  faydaId: z.string().min(1, "National ID required"),
+  faydaId: z.string().optional(),
 
   firstName: z.string().min(1, "First name required"),
 
@@ -82,13 +83,31 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+type FaydaVerificationResult = {
+  verified: boolean;
+  id: string;
+  name?: string;
+  birthDate?: string;
+  gender?: string;
+  status?: string;
+  authUrl?: string;
+  state?: string;
+  codeVerifier?: string;
+  claims?: Record<string, unknown>;
+  phone?: string;
+  email?: string;
+  error?: string;
+};
+
 export default function Eyregister() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { toast } = useToast();
 
   const [step, setStep] = useState(1);
 
   const [faydaVerified, setFaydaVerified] = useState(false);
+  const [faydaVerificationProfile, setFaydaVerificationProfile] =
+    useState<FaydaVerificationResult | null>(null);
 
   const [registrationNumber, setRegistrationNumber] = useState<
     string | null
@@ -148,6 +167,41 @@ export default function Eyregister() {
     }
   }, [selectedRoundId]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+
+    if (!code || !state) return;
+
+    const storedState = sessionStorage.getItem("fayda_state");
+    const codeVerifier = sessionStorage.getItem("fayda_code_verifier");
+
+    if (state !== storedState || !codeVerifier) {
+      toast({
+        title: t.ey_register.error,
+        description: t.ey_register.something_wrong,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    verifyFayda(undefined, { code, codeVerifier }).then((verified) => {
+      if (!verified) return;
+
+      setFaydaVerified(true);
+      setStep(2);
+      toast({
+        title: t.common.success,
+        description: t.ey_register.national_id_verified,
+      });
+
+      sessionStorage.removeItem("fayda_state");
+      sessionStorage.removeItem("fayda_code_verifier");
+      window.history.replaceState({}, "", window.location.pathname);
+    });
+  }, []);
+
   async function fetchRoundCapacity(roundId: number) {
     try {
       const response = await fetch(
@@ -162,23 +216,128 @@ export default function Eyregister() {
     }
   }
 
-  async function verifyFayda(faydaId: string) {
+  async function verifyFayda(
+    faydaId?: string,
+    options: { code?: string; codeVerifier?: string } = {},
+  ) {
     setIsVerifying(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const response = await fetch("/api/fayda/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          faydaId,
+          code: options.code,
+          codeVerifier: options.codeVerifier,
+        }),
+      });
+      const result = (await response.json()) as FaydaVerificationResult;
 
-    setIsVerifying(false);
+      if (result.authUrl && result.state && result.codeVerifier) {
+        sessionStorage.setItem("fayda_state", result.state);
+        sessionStorage.setItem("fayda_code_verifier", result.codeVerifier);
+        window.location.assign(result.authUrl);
+        return false;
+      }
 
-    return true;
+      if (!response.ok || !result.verified) {
+        toast({
+          title: t.ey_register.error,
+          description: result.error || t.ey_register.something_wrong,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      setFaydaVerificationProfile(result);
+      
+      if (result.id) {
+        form.setValue("faydaId", result.id);
+      }
+      
+      const nameParts = (result.name || "").trim().split(/\s+/).filter(Boolean);
+      if (nameParts.length >= 2 && !form.getValues("firstName") && !form.getValues("lastName")) {
+        form.setValue("firstName", nameParts[0]);
+        form.setValue("lastName", nameParts[nameParts.length - 1]);
+        if (nameParts.length > 2) form.setValue("middleName", nameParts.slice(1, -1).join(" "));
+      }
+      
+      if (result.phone && !form.getValues("phoneNumber")) {
+        form.setValue("phoneNumber", result.phone);
+      }
+      
+      if (result.email && !form.getValues("email")) {
+        form.setValue("email", result.email);
+      }
+
+      return true;
+    } catch {
+      toast({
+        title: t.ey_register.error,
+        description: t.ey_register.something_wrong,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsVerifying(false);
+    }
   }
 
-  async function processPayment() {
+  async function processPayment(paymentMethod: string) {
+    if (paymentMethod === "telebirr") {
+      try {
+        const response = await fetch("/api/telebirr/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: 100,
+            orderTitle: "Excellent Youth Registration",
+            merchOrderId: `EY-${Date.now()}`,
+            callbackInfo: "EY Registration Payment",
+          }),
+        });
+
+        if (!response.ok) {
+          toast({
+            title: t.ey_register.payment_failed,
+            description: t.ey_register.unable_verify_payment,
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        const result = await response.json();
+        
+        // In mock mode, paymentUrl is empty and status is COMPLETED - proceed without redirect
+        if (result.success && (!result.paymentUrl || result.status === "COMPLETED")) {
+          return true;
+        }
+        
+        if (result.success && result.paymentUrl) {
+          window.location.assign(result.paymentUrl);
+          return true;
+        } else {
+          toast({
+            title: t.ey_register.payment_failed,
+            description: t.ey_register.unable_verify_payment,
+            variant: "destructive",
+          });
+          return false;
+        }
+      } catch {
+        toast({
+          title: t.ey_register.payment_failed,
+          description: t.ey_register.unable_verify_payment,
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+
     setIsProcessingPayment(true);
-
     await new Promise((resolve) => setTimeout(resolve, 3000));
-
     setIsProcessingPayment(false);
-
     return true;
   }
 
@@ -190,41 +349,77 @@ export default function Eyregister() {
     }
   }
 
-  async function handleVerifyFayda() {
-    const faydaId = form.getValues("faydaId");
+  async function handleSignInWithFayda() {
+    setIsVerifying(true);
 
-    if (!faydaId) {
+    try {
+      const response = await fetch("/api/fayda/auth-url", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        toast({
+          title: t.ey_register.error,
+          description: t.ey_register.something_wrong,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const auth = await response.json();
+      
+      // In mock mode, verification is returned directly with verified status
+      if (auth.verified && auth.name) {
+        setFaydaVerificationProfile(auth);
+        setFaydaVerified(true);
+        setStep(2);
+        toast({
+          title: t.common.success,
+          description: t.ey_register.national_id_verified,
+        });
+        
+        const nameParts = (auth.name || "").trim().split(/\s+/).filter(Boolean);
+        if (nameParts.length >= 2) {
+          form.setValue("firstName", nameParts[0]);
+          form.setValue("lastName", nameParts[nameParts.length - 1]);
+          if (nameParts.length > 2) form.setValue("middleName", nameParts.slice(1, -1).join(" "));
+        }
+        if (auth.phone && !form.getValues("phoneNumber")) {
+          form.setValue("phoneNumber", auth.phone);
+        }
+        if (auth.email && !form.getValues("email")) {
+          form.setValue("email", auth.email);
+        }
+        if (auth.id) {
+          form.setValue("faydaId", auth.id);
+        }
+        return;
+      }
+      
+      if (auth.authUrl && auth.state && auth.codeVerifier) {
+        sessionStorage.setItem("fayda_state", auth.state);
+        sessionStorage.setItem("fayda_code_verifier", auth.codeVerifier);
+        window.location.assign(auth.authUrl);
+      }
+    } catch {
       toast({
-        title: "Error",
-        description: "Please enter Fayda ID",
+        title: t.ey_register.error,
+        description: t.ey_register.something_wrong,
         variant: "destructive",
       });
-
-      return;
-    }
-
-    const verified = await verifyFayda(faydaId);
-
-    if (verified) {
-      setFaydaVerified(true);
-
-      toast({
-        title: "Verified",
-        description: "National ID verified successfully",
-      });
-
-      setStep(2);
+    } finally {
+      setIsVerifying(false);
     }
   }
 
   async function onSubmit(data: FormValues) {
     try {
-      const paymentSuccess = await processPayment();
+      const paymentSuccess = await processPayment(data.paymentMethod);
 
       if (!paymentSuccess) {
         toast({
-          title: "Payment Failed",
-          description: "Unable to verify payment",
+          title: t.ey_register.payment_failed,
+          description: t.ey_register.unable_verify_payment,
           variant: "destructive",
         });
 
@@ -242,13 +437,13 @@ export default function Eyregister() {
             );
 
             setCoordinatorId(
-              participant.coordinatorId || "N/A"
+              participant.coordinatorId?.toString() || "N/A"
             );
 
             setStep(4);
 
             toast({
-              title: "Registration Successful",
+              title: t.common.success,
               description:
                 participant.registrationNumber,
             });
@@ -256,9 +451,9 @@ export default function Eyregister() {
 
           onError: () => {
             toast({
-              title: "Registration Failed",
+              title: t.ey_register.registration_failed,
               description:
-                "Unable to complete registration",
+                t.ey_register.unable_complete_registration,
               variant: "destructive",
             });
           },
@@ -266,8 +461,8 @@ export default function Eyregister() {
       );
     } catch {
       toast({
-        title: "Error",
-        description: "Something went wrong",
+        title: t.ey_register.error,
+        description: t.ey_register.something_wrong,
         variant: "destructive",
       });
     }
@@ -291,13 +486,11 @@ export default function Eyregister() {
           <Users className="h-14 w-14 mx-auto mb-4 text-white/80" />
 
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            {language === "am"
-              ? "የመልካም ወጣት ምዝገባ"
-              : "Excellent Youth Registration"}
+            {t.ey_register.title}
           </h1>
 
           <p className="text-white/70 text-lg">
-            2026 Winter Camp
+            {t.ey_register.subtitle}
           </p>
         </div>
       </section>
@@ -308,7 +501,7 @@ export default function Eyregister() {
           <CardContent className="p-6">
             <div className="flex justify-between text-sm mb-3">
               <span className="font-semibold">
-                Step {step} / 4
+                {t.ey_register.step} {step} {t.ey_register.of} 4
               </span>
 
               <span className="text-muted-foreground">
@@ -329,7 +522,7 @@ export default function Eyregister() {
                   step >= 1 ? "text-primary font-bold" : ""
                 }
               >
-                Verification
+                {t.ey_register.verification}
               </div>
 
               <div
@@ -337,7 +530,7 @@ export default function Eyregister() {
                   step >= 2 ? "text-primary font-bold" : ""
                 }
               >
-                Details
+                {t.ey_register.details}
               </div>
 
               <div
@@ -345,7 +538,7 @@ export default function Eyregister() {
                   step >= 3 ? "text-primary font-bold" : ""
                 }
               >
-                Payment
+                {t.ey_register.payment}
               </div>
 
               <div
@@ -353,7 +546,7 @@ export default function Eyregister() {
                   step >= 4 ? "text-primary font-bold" : ""
                 }
               >
-                Complete
+                {t.ey_register.complete}
               </div>
             </div>
           </CardContent>
@@ -366,63 +559,50 @@ export default function Eyregister() {
             <form
               onSubmit={form.handleSubmit(onSubmit)}
             >
-              {/* STEP 1 */}
-              {step === 1 && (
-                <Card className="rounded-3xl shadow-xl">
-                  <CardContent className="p-8 md:p-12">
-                    <div className="text-center mb-10">
-                      <ShieldCheck className="h-14 w-14 mx-auto text-primary mb-4" />
+{/* STEP 1 */}
+               {step === 1 && (
+                 <Card className="rounded-3xl shadow-xl">
+                   <CardContent className="p-8 md:p-12">
+                     <div className="text-center mb-10">
+                       <ShieldCheck className="h-14 w-14 mx-auto text-primary mb-4" />
 
-                      <h2 className="text-3xl font-serif font-bold">
-                        Fayda Verification
-                      </h2>
+                       <h2 className="text-3xl font-serif font-bold">
+                         {t.ey_register.fayda_verification}
+                       </h2>
 
-                      <p className="text-muted-foreground mt-2">
-                        Verify your National ID first
-                      </p>
-                    </div>
+                       <p className="text-muted-foreground mt-2">
+                         {t.ey_register.verify_first}
+                       </p>
+                     </div>
 
-                    <div className="max-w-xl mx-auto">
-                      <FormField
-                        control={form.control}
-                        name="faydaId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Fayda ID
-                            </FormLabel>
+                     <div className="max-w-xl mx-auto">
+                       <Button
+                         type="button"
+                         onClick={handleSignInWithFayda}
+                         disabled={isVerifying}
+                         className="w-full mt-6 h-12 rounded-xl"
+                       >
+                         {isVerifying
+                           ? t.ey_register.verifying
+                           : t.ey_register.sign_in_with_fayda}
 
-                            <FormControl>
-                              <Input
-                                placeholder="Enter Fayda ID..."
-                                className="h-12 rounded-xl"
-                                {...field}
-                              />
-                            </FormControl>
+                         <LogIn className="ml-2 h-4 w-4" />
+                       </Button>
 
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button
-                        type="button"
-                        onClick={
-                          handleVerifyFayda
-                        }
-                        disabled={isVerifying}
-                        className="w-full mt-6 h-12 rounded-xl"
-                      >
-                        {isVerifying
-                          ? "Verifying..."
-                          : "Verify & Continue"}
-
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                       {faydaVerified && faydaVerificationProfile && (
+                         <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
+                           <div className="font-semibold text-primary">
+                             {t.ey_register.verified}
+                           </div>
+                           <div className="mt-1 text-muted-foreground">
+                             {faydaVerificationProfile.name || faydaVerificationProfile.id}
+                           </div>
+                         </div>
+                       )}
+                     </div>
+                   </CardContent>
+                 </Card>
+               )}
 
               {/* STEP 2 */}
               {step === 2 && (
@@ -430,11 +610,11 @@ export default function Eyregister() {
                   <CardContent className="p-8 md:p-12">
                     <div className="mb-10">
                       <h2 className="text-3xl font-serif font-bold">
-                        Participant Details
+                        {t.ey_register.participant_details}
                       </h2>
 
                       <p className="text-muted-foreground mt-2">
-                        Fill your personal information
+                        {t.ey_register.fill_personal_info}
                       </p>
                     </div>
 
@@ -445,7 +625,7 @@ export default function Eyregister() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              First Name
+                              {t.ey_register.first_name}
                             </FormLabel>
 
                             <FormControl>
@@ -465,7 +645,7 @@ export default function Eyregister() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Middle Name
+                              {t.ey_register.middle_name}
                             </FormLabel>
 
                             <FormControl>
@@ -483,7 +663,7 @@ export default function Eyregister() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Last Name
+                              {t.ey_register.last_name}
                             </FormLabel>
 
                             <FormControl>
@@ -505,7 +685,7 @@ export default function Eyregister() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              City
+                              {t.ey_register.city}
                             </FormLabel>
 
                             <FormControl>
@@ -523,7 +703,7 @@ export default function Eyregister() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Phone Number
+                              {t.ey_register.phone_number}
                             </FormLabel>
 
                             <FormControl>
@@ -543,7 +723,7 @@ export default function Eyregister() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Email
+                              {t.ey_register.email}
                             </FormLabel>
 
                             <FormControl>
@@ -564,7 +744,7 @@ export default function Eyregister() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Event
+                              {t.ey_register.select_event}
                             </FormLabel>
 
                             <Select
@@ -583,7 +763,7 @@ export default function Eyregister() {
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select Event" />
+                                  <SelectValue placeholder={t.ey_register.select_event} />
                                 </SelectTrigger>
                               </FormControl>
 
@@ -614,7 +794,7 @@ export default function Eyregister() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Round
+                              {t.ey_register.select_round}
                             </FormLabel>
 
                             <Select
@@ -633,7 +813,7 @@ export default function Eyregister() {
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select Round" />
+                                  <SelectValue placeholder={t.ey_register.select_round} />
                                 </SelectTrigger>
                               </FormControl>
 
@@ -672,8 +852,7 @@ export default function Eyregister() {
                           <p>
                             {
                               roundCapacityStatus.available
-                            }{" "}
-                            seats remaining
+                            } {t.ey_register.seats_remaining}
                           </p>
                         )}
                       </div>
@@ -688,7 +867,7 @@ export default function Eyregister() {
                         }
                       >
                         <ChevronLeft className="mr-2 h-4 w-4" />
-                        Back
+                        {t.ey_register.back}
                       </Button>
 
                       <Button
@@ -697,7 +876,7 @@ export default function Eyregister() {
                           setStep(3)
                         }
                       >
-                        Continue
+                        {t.ey_register.continue}
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
@@ -711,11 +890,11 @@ export default function Eyregister() {
                   <CardContent className="p-8 md:p-12">
                     <div className="mb-10">
                       <h2 className="text-3xl font-serif font-bold">
-                        Payment
+                        {t.ey_register.payment}
                       </h2>
 
                       <p className="text-muted-foreground mt-2">
-                        Complete your payment
+                        {t.ey_register.complete_registration}
                       </p>
                     </div>
 
@@ -725,7 +904,7 @@ export default function Eyregister() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Payment Method
+                              {t.ey_register.payment_method}
                           </FormLabel>
 
                           <FormControl>
@@ -748,8 +927,7 @@ export default function Eyregister() {
                                   <Building2 className="h-5 w-5" />
 
                                   <label htmlFor="bank">
-                                    Bank
-                                    Transfer
+                                    {t.ey_register.bank_transfer}
                                   </label>
                                 </div>
                               </div>
@@ -764,7 +942,7 @@ export default function Eyregister() {
                                   <CreditCard className="h-5 w-5" />
 
                                   <label htmlFor="telebirr">
-                                    TeleBirr
+                                    {t.ey_register.telebirr}
                                   </label>
                                 </div>
                               </div>
@@ -782,13 +960,12 @@ export default function Eyregister() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                Reference
-                                Number
+                                {t.ey_register.reference_number}
                               </FormLabel>
 
                               <FormControl>
                                 <Input
-                                  placeholder="Enter payment reference..."
+                                  placeholder={t.ey_register.enter_payment_reference}
                                   {...field}
                                 />
                               </FormControl>
@@ -807,7 +984,7 @@ export default function Eyregister() {
                         }
                       >
                         <ChevronLeft className="mr-2 h-4 w-4" />
-                        Back
+                        {t.ey_register.back}
                       </Button>
 
                       <Button
@@ -817,8 +994,8 @@ export default function Eyregister() {
                         }
                       >
                         {isProcessingPayment
-                          ? "Processing..."
-                          : "Complete Registration"}
+                          ? t.ey_register.processing
+                          : t.ey_register.complete_registration}
 
                         <CheckCircle2 className="ml-2 h-4 w-4" />
                       </Button>
@@ -836,18 +1013,17 @@ export default function Eyregister() {
                     </div>
 
                     <h2 className="text-4xl font-serif font-bold mb-4">
-                      Registration Complete
+                      {t.ey_register.registration_complete}
                     </h2>
 
                     <p className="text-muted-foreground mb-8">
-                      Your registration has been
-                      successfully completed.
+                      {t.ey_register.registration_successful}
                     </p>
 
                     <div className="space-y-5 max-w-md mx-auto">
                       <div className="border rounded-2xl p-5">
                         <div className="text-sm text-muted-foreground mb-2">
-                          Registration Number
+                          {t.ey_register.registration_number}
                         </div>
 
                         <Badge className="text-lg px-5 py-2">
@@ -857,7 +1033,7 @@ export default function Eyregister() {
 
                       <div className="border rounded-2xl p-5">
                         <div className="text-sm text-muted-foreground mb-2">
-                          Coordinator ID
+                          {t.ey_register.coordinator_id}
                         </div>
 
                         <Badge variant="secondary">

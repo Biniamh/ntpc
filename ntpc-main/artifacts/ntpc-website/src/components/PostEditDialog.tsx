@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useLanguage } from "@/lib/language-provider";
 
 const postEditSchema = z.object({
   title: z.string().min(1, "Title required"),
@@ -37,6 +38,7 @@ interface PostEditDialogProps {
 }
 
 export function PostEditDialog({ post, open, onOpenChange, onSave, loading }: PostEditDialogProps) {
+  const { t } = useLanguage();
   const form = useForm<PostEditValues>({
     resolver: zodResolver(postEditSchema),
     defaultValues: {
@@ -68,7 +70,7 @@ export function PostEditDialog({ post, open, onOpenChange, onSave, loading }: Po
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Edit Post</DialogTitle>
+          <DialogTitle>{t.admin.church.edit} {t.admin.church.sermon_title}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -77,9 +79,9 @@ export function PostEditDialog({ post, open, onOpenChange, onSave, loading }: Po
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sermon Title</FormLabel>
+                  <FormLabel>{t.admin.church.sermon_title}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Title of the sermon..." {...field} />
+                    <Input placeholder={t.admin.church.sermon_title} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -90,9 +92,9 @@ export function PostEditDialog({ post, open, onOpenChange, onSave, loading }: Po
               name="highlights"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Highlights</FormLabel>
+                  <FormLabel>{t.admin.church.highlights}</FormLabel>
                   <FormControl>
-                    <Textarea rows={4} placeholder="Key highlights from the sermon..." {...field} />
+                    <Textarea rows={4} placeholder={t.admin.church.highlights} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -104,7 +106,7 @@ export function PostEditDialog({ post, open, onOpenChange, onSave, loading }: Po
                 name="photoUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Photo URL</FormLabel>
+                    <FormLabel>{t.admin.church.photo_url}</FormLabel>
                     <FormControl>
                       <Input placeholder="https://..." {...field} />
                     </FormControl>
@@ -117,7 +119,7 @@ export function PostEditDialog({ post, open, onOpenChange, onSave, loading }: Po
                 name="facebookUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Facebook URL</FormLabel>
+                    <FormLabel>{t.admin.church.facebook_url}</FormLabel>
                     <FormControl>
                       <Input placeholder="https://facebook.com/..." {...field} />
                     </FormControl>
@@ -130,7 +132,7 @@ export function PostEditDialog({ post, open, onOpenChange, onSave, loading }: Po
                 name="youtubeUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>YouTube URL</FormLabel>
+                    <FormLabel>{t.admin.church.youtube_url}</FormLabel>
                     <FormControl>
                       <Input placeholder="https://youtube.com/..." {...field} />
                     </FormControl>
@@ -141,10 +143,10 @@ export function PostEditDialog({ post, open, onOpenChange, onSave, loading }: Po
             </div>
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                {t.admin.church.cancel}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save Changes"}
+                {loading ? t.admin.common.loading : t.admin.church.save}
               </Button>
             </div>
           </form>

@@ -861,6 +861,8 @@ components:
           type: string
         youtubeUrl:
           type: string
+        pinned:
+          type: boolean
         createdAt:
           type: string
       required:
@@ -898,6 +900,10 @@ components:
         date:
           type: string
         imageUrl:
+          type: string
+        pinned:
+          type: boolean
+        category:
           type: string
         createdAt:
           type: string

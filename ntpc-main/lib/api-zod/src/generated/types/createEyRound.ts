@@ -10,4 +10,6 @@ export interface CreateEyRound {
   eventId: number;
   roundNumber: number;
   capacity: number;
+  fromDate: string;
+  toDate: string;
 }

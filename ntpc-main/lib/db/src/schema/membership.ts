@@ -1,6 +1,5 @@
+import { InferModel } from "drizzle-orm";
 import { pgTable, serial, text, boolean, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
 
 export const membershipRequestsTable = pgTable("membership_requests", {
   id: serial("id").primaryKey(),
@@ -17,6 +16,5 @@ export const membershipRequestsTable = pgTable("membership_requests", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertMembershipRequestSchema = createInsertSchema(membershipRequestsTable).omit({ id: true, createdAt: true });
-export type InsertMembershipRequest = z.infer<typeof insertMembershipRequestSchema>;
+export type InsertMembershipRequest = InferModel<typeof membershipRequestsTable, "insert">;
 export type MembershipRequest = typeof membershipRequestsTable.$inferSelect;

@@ -87,16 +87,18 @@ export class BadgeGenerationService {
       <meta charset="UTF-8">
       <title>Event Badges</title>
       <style>
+        @page { size: 4in 5.5in; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; padding: 0; }
         
         .badge-page {
           page-break-after: always;
           display: flex;
           justify-content: center;
           align-items: center;
-          min-height: 11in;
-          padding: 20px;
+          width: 4in;
+          height: 5.5in;
+          padding: 0;
         }
         
         .badge {
@@ -271,7 +273,7 @@ export class BadgeGenerationService {
         
         @media print {
           body { margin: 0; padding: 0; background: white; }
-          .badge-page { min-height: auto; page-break-after: always; }
+          .badge-page { width: 4in; height: 5.5in; page-break-after: always; }
           .badge { box-shadow: none; }
         }
       </style>

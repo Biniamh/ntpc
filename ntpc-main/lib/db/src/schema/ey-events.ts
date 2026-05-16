@@ -1,6 +1,5 @@
+import { InferModel } from "drizzle-orm";
 import { pgTable, serial, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 export const eyEventsTable = pgTable("ey_events", {
   id: serial("id").primaryKey(),
@@ -14,6 +13,5 @@ export const eyEventsTable = pgTable("ey_events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertEyEventSchema = createInsertSchema(eyEventsTable).omit({ id: true, createdAt: true });
-export type InsertEyEvent = z.infer<typeof insertEyEventSchema>;
+export type InsertEyEvent = InferModel<typeof eyEventsTable, "insert">;
 export type EyEvent = typeof eyEventsTable.$inferSelect;

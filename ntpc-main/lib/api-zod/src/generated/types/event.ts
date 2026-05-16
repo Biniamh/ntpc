@@ -12,5 +12,7 @@ export interface Event {
   description: string;
   date: string;
   imageUrl?: string;
+  pinned?: boolean;
+  category?: string;
   createdAt: string;
 }
