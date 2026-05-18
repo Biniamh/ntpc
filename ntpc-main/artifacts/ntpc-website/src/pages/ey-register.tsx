@@ -206,17 +206,28 @@ export default function Eyregister() {
      });
    }, []);
    
-   useEffect(() => {
-     const params = new URLSearchParams(window.location.search);
-     const transactionId = params.get("transactionId");
-     const status = params.get("status");
-     
-     // Check if we're returning from Telebirr payment
-     if (transactionId && paymentMethod === "telebirr") {
-       // Verify the payment
-       verifyTelebirrPayment(transactionId);
-     }
-   }, [paymentMethod]);
+    useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      const transactionId = params.get("transactionId");
+      const status = params.get("status");
+      
+      // Check if we're returning from Telebirr payment
+      if (transactionId && paymentMethod === "telebirr") {
+        // Verify the payment
+        verifyTelebirrPayment(transactionId);
+      }
+    }, [paymentMethod, window.location.search]);
+
+    // Auto-proceed with registration after Telebirr payment verification (from URL callback)
+    useEffect(() => {
+      // Only auto-proceed if we're coming from a Telebirr callback (real mode)
+      // In mock mode, verification happens immediately in processPayment
+      const isMockEnabled = import.meta.env.VITE_TELEBIRR_MOCK_ENABLED === "true";
+      if (!isMockEnabled && step === 3 && paymentMethod === "telebirr" && telebirrPaymentVerified && !isProcessingPayment && !isVerifyingTelebirr) {
+        // Automatically submit the form to proceed with registration
+        onSubmit(form.getValues());
+      }
+    }, [step, paymentMethod, telebirrPaymentVerified, isProcessingPayment, isVerifyingTelebirr]);
 
   async function fetchRoundCapacity(roundId: number) {
     try {
@@ -308,11 +319,18 @@ export default function Eyregister() {
         if (isMockEnabled) {
           // In mock mode, automatically verify payment
           setIsVerifyingTelebirr(true);
+          // Simulate payment processing delay
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          // Generate a mock transaction ID and store it in bankReference for backend verification
+          const mockTransactionId = `MOCK-${Date.now()}`;
           setTelebirrPaymentVerified(true);
-          // Don't change step - let user continue through normal flow
+          setIsVerifyingTelebirr(false);
+          // Update the form's bankReference with the mock transaction ID
+          form.setValue("bankReference", mockTransactionId);
           return true;
         } else {
           // In real mode, initiate payment and wait for callback
+          setIsProcessingPayment(true);
           try {
             const response = await fetch("/api/telebirr/initiate", {
               method: "POST",
@@ -326,6 +344,7 @@ export default function Eyregister() {
             });
 
             if (!response.ok) {
+              setIsProcessingPayment(false);
               toast({
                 title: t.ey_register.payment_failed,
                 description: t.ey_register.unable_verify_payment,
@@ -336,19 +355,35 @@ export default function Eyregister() {
 
             const result = await response.json();
             
-            if (result.success && result.paymentUrl) {
-              // Redirect to Telebirr payment page
-              window.location.assign(result.paymentUrl);
-              return true;
+            // Check for new API response format
+            if (result.code === "0" && result.msg === "success") {
+              // In real mode, we should always get a paymentUrl to redirect to
+              if (result.data?.toPayUrl) {
+                // Redirect to Telebirr payment page
+                window.location.assign(result.data.toPayUrl);
+                return true;
+              } else {
+                // No paymentUrl means something went wrong
+                setIsProcessingPayment(false);
+                toast({
+                  title: t.ey_register.payment_failed,
+                  description: t.ey_register.unable_verify_payment,
+                  variant: "destructive",
+                });
+                return false;
+              }
             } else {
+              // Handle error response
+              setIsProcessingPayment(false);
               toast({
                 title: t.ey_register.payment_failed,
-                description: t.ey_register.unable_verify_payment,
+                description: result.msg || t.ey_register.unable_verify_payment,
                 variant: "destructive",
               });
               return false;
             }
-          } catch {
+          } catch (error) {
+            setIsProcessingPayment(false);
             toast({
               title: t.ey_register.payment_failed,
               description: t.ey_register.unable_verify_payment,
@@ -386,7 +421,28 @@ export default function Eyregister() {
 
         const result = await response.json();
         
-        if (result.success && result.verified) {
+        // Check for new API response format
+        if (result.code === "0" && result.msg === "success") {
+          // New API format
+          const isVerified = result.data && result.data.verified === true;
+          if (isVerified) {
+            setTelebirrPaymentVerified(true);
+            setIsVerifyingTelebirr(false);
+            toast({
+              title: t.common.success,
+              description: t.ey_register.payment_verified,
+            });
+            // Don't change step - let user continue through normal flow
+          } else {
+            toast({
+              title: t.ey_register.payment_failed,
+              description: t.ey_register.unable_verify_payment,
+              variant: "destructive",
+            });
+            setIsVerifyingTelebirr(false);
+          }
+        } else if (result.success && result.verified) {
+          // Old API format (backward compatibility)
           setTelebirrPaymentVerified(true);
           setIsVerifyingTelebirr(false);
           toast({
@@ -395,9 +451,10 @@ export default function Eyregister() {
           });
           // Don't change step - let user continue through normal flow
         } else {
+          // Handle error response
           toast({
             title: t.ey_register.payment_failed,
-            description: t.ey_register.unable_verify_payment,
+            description: (result.msg || result.error || t.ey_register.unable_verify_payment),
             variant: "destructive",
           });
           setIsVerifyingTelebirr(false);
@@ -475,85 +532,126 @@ export default function Eyregister() {
     }
   }
 
-   async function onSubmit(data: FormValues) {
-     try {
-       // Handle Telebirr payment verification
-       if (data.paymentMethod === "telebirr") {
-         // If already verified, proceed with registration
-         if (telebirrPaymentVerified) {
-           // Proceed with registration (fall through to registration logic below)
-         } else {
-           // Initiate Telebirr payment process
-           const paymentSuccess = await processPayment(data.paymentMethod);
-           if (!paymentSuccess) {
-             toast({
-               title: t.ey_register.payment_failed,
-               description: t.ey_register.unable_verify_payment,
-               variant: "destructive",
-             });
-             return;
-           }
-           // For Telebirr, processPayment either:
-           // - In mock mode: sets telebirrPaymentVerified=true and moves to step 2
-           // - In real mode: redirects to Telebirr payment page
-           // In both cases, we DON'T proceed with registration yet
-           return;
-         }
-       } else {
-         // Handle bank payment (existing logic)
-         const paymentSuccess = await processPayment(data.paymentMethod);
-         if (!paymentSuccess) {
-           toast({
-             title: t.ey_register.payment_failed,
-             description: t.ey_register.unable_verify_payment,
-             variant: "destructive",
-           });
-           return;
-         }
-       }
+    async function onSubmit(data: FormValues) {
+      try {
+        // Handle Telebirr payment verification
+        if (data.paymentMethod === "telebirr") {
+          // If already verified, proceed with registration
+          if (telebirrPaymentVerified) {
+            // Proceed with registration (use current form data)
+            const currentData = form.getValues();
+            createParticipant.mutate(
+              {
+                data: currentData,
+              },
+              {
+                onSuccess: (participant) => {
+                  setRegistrationNumber(
+                    participant.registrationNumber
+                  );
 
-       // Proceed with registration (for bank or verified telebirr)
-       createParticipant.mutate(
-         {
-           data,
-         },
-         {
-           onSuccess: (participant) => {
-             setRegistrationNumber(
-               participant.registrationNumber
-             );
+                  setCoordinatorId(
+                    participant.coordinatorId?.toString() || "N/A"
+                  );
 
-             setCoordinatorId(
-               participant.coordinatorId?.toString() || "N/A"
-             );
+                  setStep(4);
 
-             setStep(4);
+                  toast({
+                    title: t.common.success,
+                    description:
+                      participant.registrationNumber,
+                  });
+                },
 
-             toast({
-               title: t.common.success,
-               description:
-                 participant.registrationNumber,
-             });
-           },
+                onError: () => {
+                  toast({
+                    title: t.ey_register.registration_failed,
+                    description:
+                      t.ey_register.unable_complete_registration,
+                    variant: "destructive",
+                  });
+                },
+              }
+            );
+            return;
+          } else {
+            // Initiate Telebirr payment process
+            const paymentSuccess = await processPayment(data.paymentMethod);
+            if (!paymentSuccess) {
+              toast({
+                title: t.ey_register.payment_failed,
+                description: t.ey_register.unable_verify_payment,
+                variant: "destructive",
+              });
+              return;
+            }
+            // For Telebirr:
+            // - In mock mode: processPayment sets telebirrPaymentVerified=true and updates bankReference, we should proceed with registration
+            // - In real mode: processPayment redirects to payment page, we should wait for callback
+            const isMockEnabled = import.meta.env.VITE_TELEBIRR_MOCK_ENABLED === "true";
+            if (!isMockEnabled) {
+              // In real mode, we DON'T proceed with registration yet (wait for callback)
+              return;
+            }
+            // In mock mode, we fall through to proceed with registration with updated form data
+          }
+        } else {
+          // Handle bank payment (existing logic)
+          const paymentSuccess = await processPayment(data.paymentMethod);
+          if (!paymentSuccess) {
+            toast({
+              title: t.ey_register.payment_failed,
+              description: t.ey_register.unable_verify_payment,
+              variant: "destructive",
+            });
+            return;
+          }
+        }
 
-           onError: () => {
-             toast({
-               title: t.ey_register.registration_failed,
-               description:
-                 t.ey_register.unable_complete_registration,
-               variant: "destructive",
-             });
-           },
-         }
-       );
-     } catch {
-       toast({
-         title: t.ey_register.error,
-         description: t.ey_register.something_wrong,
-         variant: "destructive",
-       });
-     }
-   }
+        // Proceed with registration (for bank or verified telebirr)
+        // Use current form data to ensure we have any updates made during payment processing
+        const currentData = form.getValues();
+        createParticipant.mutate(
+          {
+            data: currentData,
+          },
+          {
+            onSuccess: (participant) => {
+              setRegistrationNumber(
+                participant.registrationNumber
+              );
+
+              setCoordinatorId(
+                participant.coordinatorId?.toString() || "N/A"
+              );
+
+              setStep(4);
+
+              toast({
+                title: t.common.success,
+                description:
+                  participant.registrationNumber,
+              });
+            },
+
+            onError: () => {
+              toast({
+                title: t.ey_register.registration_failed,
+                description:
+                  t.ey_register.unable_complete_registration,
+                variant: "destructive",
+              });
+            },
+          }
+        );
+      } catch {
+        toast({
+          title: t.ey_register.error,
+          description: t.ey_register.something_wrong,
+          variant: "destructive",
+        });
+      }
+    }
 
   const progress = (step / 4) * 100;
 
@@ -1064,19 +1162,19 @@ export default function Eyregister() {
                       </div>
                     )}
 
-                     <div className="flex justify-between mt-10">
-                       <Button
-                         type="button"
-                         variant="outline"
-                         onClick={() =>
-                           setStep(2)
-                         }
-                       >
-                         <ChevronLeft className="mr-2 h-4 w-4" />
-                         {t.ey_register.back}
-                       </Button>
+                      <div className="flex justify-between mt-10">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            setStep(2)
+                          }
+                        >
+                          <ChevronLeft className="mr-2 h-4 w-4" />
+                          {t.ey_register.back}
+                        </Button>
 
-                        {paymentMethod === "telebirr" ? (
+                        {(paymentMethod === "telebirr" && !telebirrPaymentVerified) ? (
                           <Button
                             type="button"
                             onClick={() => {
@@ -1105,7 +1203,7 @@ export default function Eyregister() {
                             <CheckCircle2 className="ml-2 h-4 w-4" />
                           </Button>
                         )}
-                     </div>
+                      </div>
                   </CardContent>
                 </Card>
               )}
