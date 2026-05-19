@@ -1,0 +1,29 @@
+create a fully response and attractive website for a church called "New Testament Priests Church ", use the logo i attached above, also use the color combination from the logo, use the attached photo of the people in church for home/hero place, and big slogan "ለኔ ህይወት ክርስቶስ ነዉ!"
+
+-the site should have vision() and mission() of the church under 'About '
+-about the visionary of the church(use attached image of him),
+
+-there should be 'contact us',(phone numbers, email, location(google map of Gerji, addis ababa Ethiopia )
+
+
+- there should be also list of 'departments' page,  that are are currently operating in the church(it should have its own page and all info about each department(name of department, description and group photos of memebers(use sample photos for all).. etc, when a department is clicked it should show all info in collapsible way, and when clicked for more go to its own department page for each ),
+
+-'support this ministry' feature(people should fill the form(Fistname, middle name, last name, phone, email, address,occupation ,amount/per month, amount/per year, reason )and submit and Admin should see list of submitted info using /admin, page),  
+
+-and also 'join us'/be a member ' form to join the church(Fistname , Middlename, Lastname,phone, email, address,occupation ,previous church member of,serving as(if any), baptized(yes, no) ), admin and  department head should see the request using /admin and /members with different credentials (for admin: admin for both username and pass), (for departments head: members for both username and pass), store this in environment variable ( .env)
+
+ -there should be a weekly post page for admin to post weekly church program(title of the sermon, some highlight texts,photos, link to the full post on facebook, and youtube video if any
+
+-there should be 'our regular programs ' page (friday program starts from 10:00 local time(weekly bible study and worship) , and sunday program starts from 3:00 local time(word of God/sermons , worships by guest singers and ntpc choirs and other programs )
+
+-there should be a 'our upcoming events ' page that is shown in its page which admin can post using /admin to post upcoming programs (e.x: baptism day, graduation day, album day, wedding day.. etc)
+
+-there should be an 'Excellent youth', page
+Which shows contents about how the church carries a youth summer camp focusing on deliverance and teaching of youth every year (put placeholder and sample images from the camp)
+
+- 'daily scripture' should be there as a pop up in the home page corner, admin should post this from /admin page 
+- language button (English/Amharic ), and the website should have a switch between those two languages 
+- should have a dark and light theme switching
+
+-Use sample photos and place holders texts if needed there for each page, and
+ we will replace it later
