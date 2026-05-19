@@ -42,7 +42,7 @@ export default function Support() {
   function onSubmit(data: FormValues) {
     create.mutate({ data }, {
       onSuccess: () => {
-        toast({ title: language === 'am' ? 'ተቀብሏል!' : 'Submitted!', description: language === 'am' ? 'ምስጋና ለዓምላካዊ ልግስናዎ!' : 'Thank you for your generous support!' });
+        toast({ title: language === 'am' ? 'ተቀብሏል!' : 'Submitted!', description: language === 'am' ? 'ለልግስናዎ እናመሰናለን!' : 'Thank you for your generous support!' });
         form.reset();
       },
       onError: () => {

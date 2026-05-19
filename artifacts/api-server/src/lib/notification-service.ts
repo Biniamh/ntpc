@@ -167,31 +167,31 @@ export class NotificationService {
           </div>
 
           <div style="background: #f9f9f9; padding: 20px; margin-top: 20px; border-radius: 5px;">
-            <h2>Registration Confirmation</h2>
+            <h2>የምዝገባ ማረጋገጫ</h2>
             <p>Dear ${data.participantName},</p>
             
-            <p>Thank you for registering for <strong>${data.eventName}</strong>. Your registration has been successfully processed.</p>
+            <p>ስለተመዘገቡ እናመሰግናለን <strong>${data.eventName}</strong>. ምዝገባዎ በተሳካ ሁኔታ ተካሂዷል.</p>
 
             <div style="background: white; padding: 15px; margin: 15px 0; border-left: 4px solid #667eea;">
-              <h3>Registration Details</h3>
-              <p><strong>Registration Number:</strong> ${data.registrationNumber}</p>
-              <p><strong>Round:</strong> Round ${data.roundNumber}</p>
+              <h3>የምዝገባ ዝርዝሮች</h3>
+              <p><strong>የምዝገባ ቁጥር:</strong> ${data.registrationNumber}</p>
+              <p><strong>ዙር:</strong> Round ${data.roundNumber}</p>
               ${
                 data.roundDates
-                  ? `<p><strong>Event Dates:</strong> ${data.roundDates.from} - ${data.roundDates.to}</p>`
+                  ? `<p><strong>ቀኖች:</strong> ${data.roundDates.from} - ${data.roundDates.to}</p>`
                   : ""
               }
             </div>
 
-            <p>Please save your registration number as you will need it to check in at the event.</p>
+            <p>በዝግጅቱ ላይ ለመግባት ስለሚፈልጉ እባክዎን የመመዝገቢያ ቁጥርዎን ያስቀምጡ.</p>
             
             <p style="margin-top: 30px; color: #666; font-size: 12px;">
-              If you have any questions, please contact our support team.
+             ማንኛውም አይነት ጥያቄ ካለዎት እባክዎ የድጋፍ ቡድናችንን ያነጋግሩ።
             </p>
           </div>
 
           <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-            <p>© NTPC - All rights reserved</p>
+            <p>© መልካም ወጣት - All rights reserved</p>
           </div>
         </div>
       </body>
@@ -206,7 +206,7 @@ export class NotificationService {
     const roundInfo = data.roundDates
       ? ` Dates: ${data.roundDates.from} - ${data.roundDates.to}.`
       : "";
-    return `Hi ${data.participantName}, your registration for ${data.eventName} is confirmed! Reg#: ${data.registrationNumber}, Round ${data.roundNumber}.${roundInfo} Coordinator ID: ${data.coordinatorId || "N/A"}. Thank you for joining us!`;
+    return `ሰላም ${data.participantName}, የ ${data.eventName} ምዝገባዎ በተሳካ ሁኔታ ተጠናቋል! የምዝገባ ቁጥር: Reg#: ${data.registrationNumber}, ዙር ${data.roundNumber}.${roundInfo} አስተባባሪ ID: ${data.coordinatorId || "N/A"}. መልካም ቆይታ ይሁንሎት!`;
   }
 }
 

@@ -617,7 +617,7 @@ dashboard: {
         registration_complete: "ምዝገባ ተጠናቋል",
         registration_successful: "ምዝገባዎ በተሳካ ሁኔታ ተጠናቋል።",
         registration_number: "የምዝገባ ቁጥር",
-        coordinator_id: "የአስተያየት መታወቂያ",
+        coordinator_id: "የአስተባባሪ መለያ ቁጥር",
         error: "ስህተት",
         payment_failed: "ክፍያ አልተሳካም",
         unable_verify_payment: "ክፍያ ለማረጋገጥ አልተቻለም",
