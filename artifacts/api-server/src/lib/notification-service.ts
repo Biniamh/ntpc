@@ -8,6 +8,7 @@ export interface NotificationData {
   roundNumber: number;
   roundDates?: { from: string; to: string };
   participantName: string;
+  coordinatorId?: string | number;
 }
 
 export interface SMTPConfig {
@@ -21,9 +22,10 @@ export interface SMTPConfig {
 }
 
 export interface SMSConfig {
-  provider: "telebirr" | "custom";
+  provider: "telebirr" | "custom" | "textbee";
   apiKey: string;
   senderName?: string;
+  baseUrl?: string;
 }
 
 /**
@@ -75,10 +77,9 @@ export class NotificationService {
     }
   }
 
-  /**
-   * Send SMS notification to participant
-   * TODO: Integrate with actual SMS provider (Telebirr, Twilio, etc.)
-   */
+/**
+    * Send SMS notification to participant via TextBee
+    */
   async sendSMSNotification(data: NotificationData): Promise<boolean> {
     if (!data.phoneNumber || !this.smsConfig) {
       console.log("SMS notification skipped: missing phone number or SMS config");
@@ -88,23 +89,49 @@ export class NotificationService {
     try {
       const smsBody = this.generateSMSBody(data);
 
-      // TODO: Replace with actual SMS sending logic based on provider
+      // TextBee SMS integration
+      if (this.smsConfig.provider === "textbee") {
+        const deviceId = process.env.TEXTBEE_DEVICE_ID;
+        
+        if (!deviceId) {
+          console.error("TextBee device ID not configured. Set TEXTBEE_DEVICE_ID environment variable.");
+          return false;
+        }
+        
+        // TextBee API: POST /api/v1/gateway/devices/{DEVICE_ID}/send-sms
+        // Phone number must be in E.164 format (+1234567890)
+        const formattedPhone = data.phoneNumber.startsWith("+") 
+          ? data.phoneNumber 
+          : `+251${data.phoneNumber.replace(/^0/, "")}`;
+        
+        const response = await fetch(
+          `https://api.textbee.dev/api/v1/gateway/devices/${deviceId}/send-sms`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": this.smsConfig.apiKey,
+            },
+            body: JSON.stringify({
+              recipients: [formattedPhone],
+              message: smsBody,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("TextBee SMS failed:", response.status, errorText);
+          return false;
+        }
+
+        const result = await response.json();
+        console.log(`TextBee SMS sent to ${data.phoneNumber}:`, result);
+        return true;
+      }
+
+      // Other provider placeholders
       console.log(`SMS would be sent to ${data.phoneNumber}: ${smsBody}`);
-
-      // Example structure for different providers:
-      // if (this.smsConfig.provider === "telebirr") {
-      //   // Telebirr SMS integration
-      //   const response = await fetch("https://api.telebirr.com/sms/send", {
-      //     method: "POST",
-      //     headers: { Authorization: `Bearer ${this.smsConfig.apiKey}` },
-      //     body: JSON.stringify({
-      //       phone: data.phoneNumber,
-      //       message: smsBody,
-      //     }),
-      //   });
-      //   return response.ok;
-      // }
-
       return true;
     } catch (error) {
       console.error("Failed to send SMS notification:", error);
@@ -172,11 +199,14 @@ export class NotificationService {
     `;
   }
 
-  /**
-   * Generate SMS body
-   */
+/**
+    * Generate SMS body with registration details
+    */
   private generateSMSBody(data: NotificationData): string {
-    return `Hi ${data.participantName}, your registration for ${data.eventName} is confirmed. Reg#: ${data.registrationNumber}. Round ${data.roundNumber}. Thank you!`;
+    const roundInfo = data.roundDates
+      ? ` Dates: ${data.roundDates.from} - ${data.roundDates.to}.`
+      : "";
+    return `Hi ${data.participantName}, your registration for ${data.eventName} is confirmed! Reg#: ${data.registrationNumber}, Round ${data.roundNumber}.${roundInfo} Coordinator ID: ${data.coordinatorId || "N/A"}. Thank you for joining us!`;
   }
 }
 
@@ -196,11 +226,13 @@ export function initializeNotificationService(): NotificationService {
       }
     : undefined;
 
-  const smsConfig: SMSConfig | undefined = process.env.SMS_PROVIDER
+  const smsProvider = process.env.SMS_PROVIDER as "telebirr" | "custom" | "textbee" | undefined;
+  const smsConfig: SMSConfig | undefined = smsProvider
     ? {
-        provider: (process.env.SMS_PROVIDER as "telebirr" | "custom") || "custom",
+        provider: smsProvider,
         apiKey: process.env.SMS_API_KEY || "",
         senderName: process.env.SMS_SENDER_NAME,
+        baseUrl: process.env.TEXTBEE_API_URL,
       }
     : undefined;
 

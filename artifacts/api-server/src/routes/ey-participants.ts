@@ -248,20 +248,21 @@ router.post("/ey-participants", async (req, res) => {
       .values(participantData)
       .returning();
 
-    if (participant) {
-      await notificationService.sendNotification({
-        email: participant.email,
-        phoneNumber: participant.phoneNumber,
-        registrationNumber: participant.registrationNumber,
-        eventName: event.title,
-        roundNumber: round.roundNumber,
-        roundDates: {
-          from: round.fromDate || "",
-          to: round.toDate || "",
-        },
-        participantName: `${participant.firstName} ${participant.lastName}`,
-      });
-    }
+if (participant) {
+       await notificationService.sendNotification({
+         email: participant.email,
+         phoneNumber: participant.phoneNumber,
+         registrationNumber: participant.registrationNumber,
+         eventName: event.title,
+         roundNumber: round.roundNumber,
+         roundDates: {
+           from: round.fromDate || "",
+           to: round.toDate || "",
+         },
+         participantName: `${participant.firstName} ${participant.lastName}`,
+         coordinatorId: coordinatorId?.toString(),
+       });
+     }
 
     res.status(201).json({
       ...participant,
