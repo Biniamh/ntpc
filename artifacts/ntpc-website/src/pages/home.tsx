@@ -38,26 +38,26 @@ export default function Home() {
 
   return (
     <div className="w-full">
-      {/* Hero Section */}
-      <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentImageIndex}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              className="absolute inset-0"
-            >
-              <img
-                src={backgroundImages[currentImageIndex]}
-                alt="Church Community"
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-          </AnimatePresence>
-          <div className="absolute inset-0 bg-black/60 bg-gradient-to-t from-black/80 to-transparent"></div>
+{/* Hero Section */}
+       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+         <div className="absolute inset-0">
+           <AnimatePresence mode="wait">
+             <motion.div
+               key={currentImageIndex}
+               initial={{ opacity: 0, scale: 1.1 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.95 }}
+               transition={{ duration: 1.5, ease: "easeInOut" }}
+               className="absolute inset-0"
+             >
+               <img
+                 src={backgroundImages[currentImageIndex]}
+                 alt="Church Community"
+                 className="w-full h-full object-cover"
+               />
+             </motion.div>
+           </AnimatePresence>
+           <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/60 to-transparent"></div>
           
           {/* Floating animation elements */}
           <motion.div
@@ -245,18 +245,71 @@ export default function Home() {
           <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-10">
             Whether you want to join us for worship, serve in a department, or support the ministry, there is a place for you here.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" variant="secondary" className="rounded-full px-8 bg-white text-primary hover:bg-gray-100">
-              <Link href="/join">Become a Member</Link>
-            </Button>
-            <Button asChild size="lg" className="rounded-full px-8 border-2 border-white/30 bg-transparent hover:bg-white/10 text-white">
-              <Link href="/support">Support the Work</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+<div className="flex flex-col sm:flex-row gap-4 justify-center">
+             <Button asChild size="lg" variant="secondary" className="rounded-full px-8 bg-white text-primary hover:bg-gray-100">
+               <Link href="/join">Become a Member</Link>
+             </Button>
+             <Button asChild size="lg" className="rounded-full px-8 border-2 border-white/30 bg-transparent hover:bg-white/10 text-white">
+               <Link href="/support">Support the Work</Link>
+             </Button>
+           </div>
+         </div>
+       </section>
 
-      <DailyScripture />
+       {/* Decoration Section */}
+       <section className="py-16 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 relative overflow-hidden">
+         <div className="container px-4 relative z-10">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+             {[...Array(8)].map((_, i) => (
+               <motion.div
+                 key={i}
+                 initial={{ opacity: 0, scale: 0 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 transition={{ delay: i * 0.1, duration: 0.5 }}
+                 className="flex justify-center"
+               >
+<motion.div
+                    animate={{
+                      y: [0, -15, 0],
+                      rotate: [0, 10, -10, 0],
+                    }}
+                    transition={{
+                      duration: 4 + (i % 3),
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: i * 0.2,
+                    }}
+                    className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-secondary shadow-lg"
+                    style={{ opacity: (30 + i * 5) / 100 }}
+                  />
+               </motion.div>
+             ))}
+           </div>
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ delay: 1, duration: 0.8 }}
+             className="text-center mt-12"
+           >
+             <p className="text-muted-foreground text-lg font-serif italic">
+               "Let us consider how we may spur one another on toward love and good deeds"
+             </p>
+             <p className="text-muted-foreground text-sm mt-2">Hebrews 10:24</p>
+           </motion.div>
+         </div>
+         <motion.div
+           animate={{ rotate: 360 }}
+           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+           className="absolute -top-20 -right-20 w-64 h-64 border-2 border-primary/10 rounded-full"
+         />
+         <motion.div
+           animate={{ rotate: -360 }}
+           transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+           className="absolute -bottom-32 -left-32 w-96 h-96 border-2 border-secondary/10 rounded-full"
+         />
+       </section>
+
+       <DailyScripture />
     </div>
   );
 }
