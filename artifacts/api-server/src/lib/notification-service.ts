@@ -1,4 +1,5 @@
 import { EyParticipant } from "@workspace/db";
+import nodemailer from "nodemailer";
 
 export interface NotificationData {
   email?: string;
@@ -41,10 +42,9 @@ export class NotificationService {
     this.smsConfig = smsConfig;
   }
 
-  /**
-   * Send email notification to participant
-   * TODO: Integrate with actual email provider (SendGrid, AWS SES, etc.)
-   */
+/**
+    * Send email notification to participant
+    */
   async sendEmailNotification(data: NotificationData): Promise<boolean> {
     if (!data.email || !this.smtpConfig) {
       console.log("Email notification skipped: missing email or SMTP config");
@@ -53,23 +53,18 @@ export class NotificationService {
 
     try {
       const emailBody = this.generateEmailBody(data);
-      const emailSubject = `Registration Confirmation - ${data.eventName}`;
+      const emailSubject = `የምዝገባ ማረጋገጫ - ${data.eventName}`;
 
-      // TODO: Replace with actual email sending logic
-      console.log(
-        `Email would be sent to ${data.email} with subject: ${emailSubject}`,
-      );
-      console.log("Email body:", emailBody);
+      const transporter = nodemailer.createTransport(this.smtpConfig);
+      
+      await transporter.sendMail({
+        from: `"NTPC" <${this.smtpConfig.auth.user}>`,
+        to: data.email,
+        subject: emailSubject,
+        html: emailBody,
+      });
 
-      // Example structure for email sending:
-      // const transporter = nodemailer.createTransport(this.smtpConfig);
-      // await transporter.sendMail({
-      //   from: this.smtpConfig.auth.user,
-      //   to: data.email,
-      //   subject: emailSubject,
-      //   html: emailBody,
-      // });
-
+      console.log(`Email sent successfully to ${data.email}`);
       return true;
     } catch (error) {
       console.error("Failed to send email notification:", error);
@@ -204,7 +199,7 @@ export class NotificationService {
     */
   private generateSMSBody(data: NotificationData): string {
     const roundInfo = data.roundDates
-      ? ` Dates: ${data.roundDates.from} - ${data.roundDates.to}.`
+      ? ` ቀናት: ከ ${data.roundDates.from} እስከ ${data.roundDates.to}.`
       : "";
     return `ሰላም ${data.participantName}, የ ${data.eventName} ምዝገባዎ በተሳካ ሁኔታ ተጠናቋል! የምዝገባ ቁጥር: Reg#: ${data.registrationNumber}, ዙር ${data.roundNumber}.${roundInfo} አስተባባሪ ID: ${data.coordinatorId || "N/A"}. መልካም ቆይታ ይሁንሎት!`;
   }

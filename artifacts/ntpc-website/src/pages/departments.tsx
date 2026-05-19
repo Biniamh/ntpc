@@ -18,11 +18,11 @@ export default function Departments() {
       <section className="bg-primary text-primary-foreground py-16 text-center">
         <div className="container px-4 mx-auto">
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            {language === 'am' ? 'ክፍሎቻችን' : 'Our Departments'}
+            {language === 'am' ? 'ዲፓርትመንቶች ' : 'Our Departments'}
           </h1>
           <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto">
             {language === 'am'
-              ? 'በቤተ ክርስቲያናችን ውስጥ ያሉ ሕያው ክፍሎች — ሁሉም ቦታ አለ!'
+              ? 'በቤተ ክርስቲያናችን ውስጥ ያሉ ዲፓርትመንቶች — ለሁሉም ቦታ አለ!'
               : 'Active ministries in our church — there is a place for everyone!'}
           </p>
         </div>
@@ -36,7 +36,7 @@ export default function Departments() {
         ) : departments.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
             <Users className="h-16 w-16 mx-auto mb-4 opacity-30" />
-            <p className="text-xl font-serif">{language === 'am' ? 'ምንም ክፍሎች አልተገኙም' : 'No departments found'}</p>
+            <p className="text-xl font-serif">{language === 'am' ? 'ምንም ዲፓርትመንቶች አልተገኙም' : 'No departments found'}</p>
           </div>
         ) : (
           <div className="space-y-4">

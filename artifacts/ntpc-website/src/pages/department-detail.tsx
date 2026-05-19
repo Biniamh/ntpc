@@ -33,7 +33,7 @@ export default function DepartmentDetail({ params }: DepartmentDetailProps) {
         <Users className="h-16 w-16 mx-auto mb-4 opacity-30" />
         <p className="text-xl font-serif">{language === 'am' ? 'ክፍሉ አልተገኘም' : 'Department not found'}</p>
         <Button asChild className="mt-6 rounded-full">
-          <Link href="/departments"><ArrowLeft className="mr-2 h-4 w-4" /> {language === 'am' ? 'ወደ ክፍሎች' : 'Back to Departments'}</Link>
+          <Link href="/departments"><ArrowLeft className="mr-2 h-4 w-4" /> {language === 'am' ? 'ወደ ዲፓርትመንቶች' : 'Back to Departments'}</Link>
         </Button>
       </div>
     );
@@ -46,7 +46,7 @@ export default function DepartmentDetail({ params }: DepartmentDetailProps) {
         <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
         <div className="container px-4 mx-auto relative z-10">
           <Button asChild variant="ghost" className="mb-6 text-primary-foreground/70 hover:text-primary-foreground -ml-2">
-            <Link href="/departments"><ArrowLeft className="mr-2 h-4 w-4" /> {language === 'am' ? 'ወደ ክፍሎች' : 'All Departments'}</Link>
+            <Link href="/departments"><ArrowLeft className="mr-2 h-4 w-4" /> {language === 'am' ? 'ወደ ዲፓርትመንቶች' : 'All Departments'}</Link>
           </Button>
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">

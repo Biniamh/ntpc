@@ -183,7 +183,7 @@ export default function About() {
                   },
                   {
                     num: "23",
-                    label: language === "am" ? "ክፍሎች" : "Departments",
+                    label: language === "am" ? "ዲፓርትመንቶች" : "Departments",
                   },
                 ].map((stat, i) => (
                   <div
