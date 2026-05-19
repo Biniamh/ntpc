@@ -12,6 +12,7 @@ import eyEventsRouter from "./ey-events";
 import eyRoundsRouter from "./ey-rounds";
 import eyParticipantsRouter from "./ey-participants";
 import eyCoordinatorsRouter from "./ey-coordinators";
+import telebirrRouter from "./telebirr";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(eyEventsRouter);
 router.use(eyRoundsRouter);
 router.use(eyParticipantsRouter);
 router.use(eyCoordinatorsRouter);
+router.use(telebirrRouter);
 
 export default router;

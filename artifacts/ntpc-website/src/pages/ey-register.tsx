@@ -52,12 +52,13 @@ import {
   ChevronRight,
   ChevronLeft,
   Building2,
+  LogIn,
 } from "lucide-react";
 
 import excellentyouth from "@/assets/excellentyouth.jpeg";
 
 const schema = z.object({
-  faydaId: z.string().min(1, "National ID required"),
+  faydaId: z.string().optional(),
 
   firstName: z.string().min(1, "First name required"),
 
@@ -92,6 +93,9 @@ type FaydaVerificationResult = {
   authUrl?: string;
   state?: string;
   codeVerifier?: string;
+  claims?: Record<string, unknown>;
+  phone?: string;
+  email?: string;
   error?: string;
 };
 
@@ -113,10 +117,14 @@ export default function Eyregister() {
     null
   );
 
-  const [isVerifying, setIsVerifying] = useState(false);
-
-  const [isProcessingPayment, setIsProcessingPayment] =
-    useState(false);
+   const [isVerifying, setIsVerifying] = useState(false);
+   
+   const [isProcessingPayment, setIsProcessingPayment] =
+     useState(false);
+     
+   const [isVerifyingTelebirr, setIsVerifyingTelebirr] = useState(false);
+   
+   const [telebirrPaymentVerified, setTelebirrPaymentVerified] = useState(false);
 
   const [roundCapacityStatus, setRoundCapacityStatus] =
     useState<any>(null);
@@ -157,48 +165,69 @@ export default function Eyregister() {
     );
   }, [eyRounds, selectedEventId]);
 
-  useEffect(() => {
-    if (selectedRoundId > 0) {
-      loadSelectedRoundCapacity(selectedRoundId);
-    }
-  }, [selectedRoundId]);
+   useEffect(() => {
+     if (selectedRoundId > 0) {
+       loadSelectedRoundCapacity(selectedRoundId);
+     }
+   }, [selectedRoundId]);
+ 
+   useEffect(() => {
+     const params = new URLSearchParams(window.location.search);
+     const code = params.get("code");
+     const state = params.get("state");
+ 
+     if (!code || !state) return;
+ 
+     const storedState = sessionStorage.getItem("fayda_state");
+     const codeVerifier = sessionStorage.getItem("fayda_code_verifier");
+ 
+     if (state !== storedState || !codeVerifier) {
+       toast({
+         title: t.ey_register.error,
+         description: t.ey_register.something_wrong,
+         variant: "destructive",
+       });
+       return;
+     }
+ 
+     verifyFayda(undefined, { code, codeVerifier }).then((verified) => {
+       if (!verified) return;
+ 
+       setFaydaVerified(true);
+       setStep(2);
+       toast({
+         title: t.common.success,
+         description: t.ey_register.national_id_verified,
+       });
+ 
+       sessionStorage.removeItem("fayda_state");
+       sessionStorage.removeItem("fayda_code_verifier");
+       window.history.replaceState({}, "", window.location.pathname);
+     });
+   }, []);
+   
+    useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      const transactionId = params.get("transactionId");
+      const status = params.get("status");
+      
+      // Check if we're returning from Telebirr payment
+      if (transactionId && paymentMethod === "telebirr") {
+        // Verify the payment
+        verifyTelebirrPayment(transactionId);
+      }
+    }, [paymentMethod, window.location.search]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const state = params.get("state");
-
-    if (!code || !state) return;
-
-    const storedState = sessionStorage.getItem("fayda_state");
-    const codeVerifier = sessionStorage.getItem("fayda_code_verifier");
-    const faydaId = sessionStorage.getItem("fayda_id");
-
-    if (state !== storedState || !codeVerifier || !faydaId) {
-      toast({
-        title: t.ey_register.error,
-        description: t.ey_register.something_wrong,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    verifyFayda(faydaId, { code, codeVerifier }).then((verified) => {
-      if (!verified) return;
-
-      setFaydaVerified(true);
-      setStep(2);
-      toast({
-        title: t.common.success,
-        description: t.ey_register.national_id_verified,
-      });
-
-      sessionStorage.removeItem("fayda_state");
-      sessionStorage.removeItem("fayda_code_verifier");
-      sessionStorage.removeItem("fayda_id");
-      window.history.replaceState({}, "", window.location.pathname);
-    });
-  }, []);
+    // Auto-proceed with registration after Telebirr payment verification (from URL callback)
+    useEffect(() => {
+      // Only auto-proceed if we're coming from a Telebirr callback (real mode)
+      // In mock mode, verification happens immediately in processPayment
+      const isMockEnabled = import.meta.env.VITE_TELEBIRR_MOCK_ENABLED === "true";
+      if (!isMockEnabled && step === 3 && paymentMethod === "telebirr" && telebirrPaymentVerified && !isProcessingPayment && !isVerifyingTelebirr) {
+        // Automatically submit the form to proceed with registration
+        onSubmit(form.getValues());
+      }
+    }, [step, paymentMethod, telebirrPaymentVerified, isProcessingPayment, isVerifyingTelebirr]);
 
   async function fetchRoundCapacity(roundId: number) {
     try {
@@ -215,7 +244,7 @@ export default function Eyregister() {
   }
 
   async function verifyFayda(
-    faydaId: string,
+    faydaId?: string,
     options: { code?: string; codeVerifier?: string } = {},
   ) {
     setIsVerifying(true);
@@ -235,7 +264,6 @@ export default function Eyregister() {
       if (result.authUrl && result.state && result.codeVerifier) {
         sessionStorage.setItem("fayda_state", result.state);
         sessionStorage.setItem("fayda_code_verifier", result.codeVerifier);
-        sessionStorage.setItem("fayda_id", faydaId);
         window.location.assign(result.authUrl);
         return false;
       }
@@ -250,11 +278,24 @@ export default function Eyregister() {
       }
 
       setFaydaVerificationProfile(result);
+      
+      if (result.id) {
+        form.setValue("faydaId", result.id);
+      }
+      
       const nameParts = (result.name || "").trim().split(/\s+/).filter(Boolean);
       if (nameParts.length >= 2 && !form.getValues("firstName") && !form.getValues("lastName")) {
         form.setValue("firstName", nameParts[0]);
         form.setValue("lastName", nameParts[nameParts.length - 1]);
         if (nameParts.length > 2) form.setValue("middleName", nameParts.slice(1, -1).join(" "));
+      }
+      
+      if (result.phone && !form.getValues("phoneNumber")) {
+        form.setValue("phoneNumber", result.phone);
+      }
+      
+      if (result.email && !form.getValues("email")) {
+        form.setValue("email", result.email);
       }
 
       return true;
@@ -270,106 +311,347 @@ export default function Eyregister() {
     }
   }
 
-  async function processPayment() {
-    setIsProcessingPayment(true);
+    async function processPayment(paymentMethod: string) {
+      if (paymentMethod === "telebirr") {
+        // Check if we're in mock mode
+        const isMockEnabled = import.meta.env.VITE_TELEBIRR_MOCK_ENABLED === "true";
+        
+        if (isMockEnabled) {
+          // In mock mode, automatically verify payment
+          setIsVerifyingTelebirr(true);
+          // Simulate payment processing delay
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          // Generate a mock transaction ID and store it in bankReference for backend verification
+          const mockTransactionId = `MOCK-${Date.now()}`;
+          setTelebirrPaymentVerified(true);
+          setIsVerifyingTelebirr(false);
+          // Update the form's bankReference with the mock transaction ID
+          form.setValue("bankReference", mockTransactionId);
+          return true;
+        } else {
+          // In real mode, initiate payment and wait for callback
+          setIsProcessingPayment(true);
+          try {
+            const response = await fetch("/api/telebirr/initiate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                amount: 100,
+                orderTitle: "Excellent Youth Registration",
+                merchOrderId: `EY-${Date.now()}`,
+                callbackInfo: "EY Registration Payment",
+              }),
+            });
 
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+            if (!response.ok) {
+              setIsProcessingPayment(false);
+              toast({
+                title: t.ey_register.payment_failed,
+                description: t.ey_register.unable_verify_payment,
+                variant: "destructive",
+              });
+              return false;
+            }
 
-    setIsProcessingPayment(false);
+            const result = await response.json();
+            
+            // Check for new API response format
+            if (result.code === "0" && result.msg === "success") {
+              // In real mode, we should always get a paymentUrl to redirect to
+              if (result.data?.toPayUrl) {
+                // Redirect to Telebirr payment page
+                window.location.assign(result.data.toPayUrl);
+                return true;
+              } else {
+                // No paymentUrl means something went wrong
+                setIsProcessingPayment(false);
+                toast({
+                  title: t.ey_register.payment_failed,
+                  description: t.ey_register.unable_verify_payment,
+                  variant: "destructive",
+                });
+                return false;
+              }
+            } else {
+              // Handle error response
+              setIsProcessingPayment(false);
+              toast({
+                title: t.ey_register.payment_failed,
+                description: result.msg || t.ey_register.unable_verify_payment,
+                variant: "destructive",
+              });
+              return false;
+            }
+          } catch (error) {
+            setIsProcessingPayment(false);
+            toast({
+              title: t.ey_register.payment_failed,
+              description: t.ey_register.unable_verify_payment,
+              variant: "destructive",
+            });
+            return false;
+          }
+        }
+      }
 
-    return true;
-  }
-
-  async function loadSelectedRoundCapacity(roundId: number) {
-    const capacity = await fetchRoundCapacity(roundId);
-
-    if (capacity) {
-      setRoundCapacityStatus(capacity);
+      setIsProcessingPayment(true);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      setIsProcessingPayment(false);
+      return true;
     }
-  }
 
-  async function handleVerifyFayda() {
-    const faydaId = form.getValues("faydaId");
+   async function loadSelectedRoundCapacity(roundId: number) {
+     const capacity = await fetchRoundCapacity(roundId);
+ 
+     if (capacity) {
+       setRoundCapacityStatus(capacity);
+     }
+   }
+   
+    async function verifyTelebirrPayment(transactionId: string) {
+      setIsVerifyingTelebirr(true);
+      try {
+        const response = await fetch(`/api/telebirr/verify/${transactionId}`, {
+          method: "GET",
+        });
 
-    if (!faydaId) {
-      toast({
-        title: t.ey_register.error,
-        description: t.ey_register.please_enter_fayda_id,
-        variant: "destructive",
-      });
+        if (!response.ok) {
+          throw new Error("Failed to verify payment");
+        }
 
-      return;
-    }
-
-    const verified = await verifyFayda(faydaId);
-
-    if (verified) {
-      setFaydaVerified(true);
-
-      toast({
-        title: t.common.success,
-        description: t.ey_register.national_id_verified,
-      });
-
-      setStep(2);
-    }
-  }
-
-  async function onSubmit(data: FormValues) {
-    try {
-      const paymentSuccess = await processPayment();
-
-      if (!paymentSuccess) {
+        const result = await response.json();
+        
+        // Check for new API response format
+        if (result.code === "0" && result.msg === "success") {
+          // New API format
+          const isVerified = result.data && result.data.verified === true;
+          if (isVerified) {
+            setTelebirrPaymentVerified(true);
+            setIsVerifyingTelebirr(false);
+            toast({
+              title: t.common.success,
+              description: t.ey_register.payment_verified,
+            });
+            // Don't change step - let user continue through normal flow
+          } else {
+            toast({
+              title: t.ey_register.payment_failed,
+              description: t.ey_register.unable_verify_payment,
+              variant: "destructive",
+            });
+            setIsVerifyingTelebirr(false);
+          }
+        } else if (result.success && result.verified) {
+          // Old API format (backward compatibility)
+          setTelebirrPaymentVerified(true);
+          setIsVerifyingTelebirr(false);
+          toast({
+            title: t.common.success,
+            description: t.ey_register.payment_verified,
+          });
+          // Don't change step - let user continue through normal flow
+        } else {
+          // Handle error response
+          toast({
+            title: t.ey_register.payment_failed,
+            description: (result.msg || result.error || t.ey_register.unable_verify_payment),
+            variant: "destructive",
+          });
+          setIsVerifyingTelebirr(false);
+        }
+      } catch (error) {
         toast({
           title: t.ey_register.payment_failed,
           description: t.ey_register.unable_verify_payment,
           variant: "destructive",
         });
+        setIsVerifyingTelebirr(false);
+      }
+    }
 
+  async function handleSignInWithFayda() {
+    setIsVerifying(true);
+
+    try {
+      const response = await fetch("/api/fayda/auth-url", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        toast({
+          title: t.ey_register.error,
+          description: t.ey_register.something_wrong,
+          variant: "destructive",
+        });
         return;
       }
 
-      createParticipant.mutate(
-        {
-          data,
-        },
-        {
-          onSuccess: (participant) => {
-            setRegistrationNumber(
-              participant.registrationNumber
-            );
-
-            setCoordinatorId(
-              participant.coordinatorId?.toString() || "N/A"
-            );
-
-            setStep(4);
-
-            toast({
-              title: t.common.success,
-              description:
-                participant.registrationNumber,
-            });
-          },
-
-          onError: () => {
-            toast({
-              title: t.ey_register.registration_failed,
-              description:
-                t.ey_register.unable_complete_registration,
-              variant: "destructive",
-            });
-          },
+      const auth = await response.json();
+      
+      // In mock mode, verification is returned directly with verified status
+      if (auth.verified && auth.name) {
+        setFaydaVerificationProfile(auth);
+        setFaydaVerified(true);
+        setStep(2);
+        toast({
+          title: t.common.success,
+          description: t.ey_register.national_id_verified,
+        });
+        
+        const nameParts = (auth.name || "").trim().split(/\s+/).filter(Boolean);
+        if (nameParts.length >= 2) {
+          form.setValue("firstName", nameParts[0]);
+          form.setValue("lastName", nameParts[nameParts.length - 1]);
+          if (nameParts.length > 2) form.setValue("middleName", nameParts.slice(1, -1).join(" "));
         }
-      );
+        if (auth.phone && !form.getValues("phoneNumber")) {
+          form.setValue("phoneNumber", auth.phone);
+        }
+        if (auth.email && !form.getValues("email")) {
+          form.setValue("email", auth.email);
+        }
+        if (auth.id) {
+          form.setValue("faydaId", auth.id);
+        }
+        return;
+      }
+      
+      if (auth.authUrl && auth.state && auth.codeVerifier) {
+        sessionStorage.setItem("fayda_state", auth.state);
+        sessionStorage.setItem("fayda_code_verifier", auth.codeVerifier);
+        window.location.assign(auth.authUrl);
+      }
     } catch {
       toast({
         title: t.ey_register.error,
         description: t.ey_register.something_wrong,
         variant: "destructive",
       });
+    } finally {
+      setIsVerifying(false);
     }
   }
+
+    async function onSubmit(data: FormValues) {
+      try {
+        // Handle Telebirr payment verification
+        if (data.paymentMethod === "telebirr") {
+          // If already verified, proceed with registration
+          if (telebirrPaymentVerified) {
+            // Proceed with registration (use current form data)
+            const currentData = form.getValues();
+            createParticipant.mutate(
+              {
+                data: currentData,
+              },
+              {
+                onSuccess: (participant) => {
+                  setRegistrationNumber(
+                    participant.registrationNumber
+                  );
+
+                  setCoordinatorId(
+                    participant.coordinatorId?.toString() || "N/A"
+                  );
+
+                  setStep(4);
+
+                  toast({
+                    title: t.common.success,
+                    description:
+                      participant.registrationNumber,
+                  });
+                },
+
+                onError: () => {
+                  toast({
+                    title: t.ey_register.registration_failed,
+                    description:
+                      t.ey_register.unable_complete_registration,
+                    variant: "destructive",
+                  });
+                },
+              }
+            );
+            return;
+          } else {
+            // Initiate Telebirr payment process
+            const paymentSuccess = await processPayment(data.paymentMethod);
+            if (!paymentSuccess) {
+              toast({
+                title: t.ey_register.payment_failed,
+                description: t.ey_register.unable_verify_payment,
+                variant: "destructive",
+              });
+              return;
+            }
+            // For Telebirr:
+            // - In mock mode: processPayment sets telebirrPaymentVerified=true and updates bankReference, we should proceed with registration
+            // - In real mode: processPayment redirects to payment page, we should wait for callback
+            const isMockEnabled = import.meta.env.VITE_TELEBIRR_MOCK_ENABLED === "true";
+            if (!isMockEnabled) {
+              // In real mode, we DON'T proceed with registration yet (wait for callback)
+              return;
+            }
+            // In mock mode, we fall through to proceed with registration with updated form data
+          }
+        } else {
+          // Handle bank payment (existing logic)
+          const paymentSuccess = await processPayment(data.paymentMethod);
+          if (!paymentSuccess) {
+            toast({
+              title: t.ey_register.payment_failed,
+              description: t.ey_register.unable_verify_payment,
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+
+        // Proceed with registration (for bank or verified telebirr)
+        // Use current form data to ensure we have any updates made during payment processing
+        const currentData = form.getValues();
+        createParticipant.mutate(
+          {
+            data: currentData,
+          },
+          {
+            onSuccess: (participant) => {
+              setRegistrationNumber(
+                participant.registrationNumber
+              );
+
+              setCoordinatorId(
+                participant.coordinatorId?.toString() || "N/A"
+              );
+
+              setStep(4);
+
+              toast({
+                title: t.common.success,
+                description:
+                  participant.registrationNumber,
+              });
+            },
+
+            onError: () => {
+              toast({
+                title: t.ey_register.registration_failed,
+                description:
+                  t.ey_register.unable_complete_registration,
+                variant: "destructive",
+              });
+            },
+          }
+        );
+      } catch {
+        toast({
+          title: t.ey_register.error,
+          description: t.ey_register.something_wrong,
+          variant: "destructive",
+        });
+      }
+    }
 
   const progress = (step / 4) * 100;
 
@@ -462,74 +744,50 @@ export default function Eyregister() {
             <form
               onSubmit={form.handleSubmit(onSubmit)}
             >
-              {/* STEP 1 */}
-              {step === 1 && (
-                <Card className="rounded-3xl shadow-xl">
-                  <CardContent className="p-8 md:p-12">
-                    <div className="text-center mb-10">
-                      <ShieldCheck className="h-14 w-14 mx-auto text-primary mb-4" />
+{/* STEP 1 */}
+               {step === 1 && (
+                 <Card className="rounded-3xl shadow-xl">
+                   <CardContent className="p-8 md:p-12">
+                     <div className="text-center mb-10">
+                       <ShieldCheck className="h-14 w-14 mx-auto text-primary mb-4" />
 
-                      <h2 className="text-3xl font-serif font-bold">
-                        {t.ey_register.fayda_verification}
-                      </h2>
+                       <h2 className="text-3xl font-serif font-bold">
+                         {t.ey_register.fayda_verification}
+                       </h2>
 
-                      <p className="text-muted-foreground mt-2">
-                        {t.ey_register.verify_first}
-                      </p>
-                    </div>
+                       <p className="text-muted-foreground mt-2">
+                         {t.ey_register.verify_first}
+                       </p>
+                     </div>
 
-                    <div className="max-w-xl mx-auto">
-                      <FormField
-                        control={form.control}
-                        name="faydaId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Fayda ID
-                            </FormLabel>
+                     <div className="max-w-xl mx-auto">
+                       <Button
+                         type="button"
+                         onClick={handleSignInWithFayda}
+                         disabled={isVerifying}
+                         className="w-full mt-6 h-12 rounded-xl"
+                       >
+                         {isVerifying
+                           ? t.ey_register.verifying
+                           : t.ey_register.sign_in_with_fayda}
 
-                            <FormControl>
-                              <Input
-                                placeholder={t.ey_register.enter_fayda_id}
-                                className="h-12 rounded-xl"
-                                {...field}
-                              />
-                            </FormControl>
+                         <LogIn className="ml-2 h-4 w-4" />
+                       </Button>
 
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button
-                        type="button"
-                        onClick={
-                          handleVerifyFayda
-                        }
-                        disabled={isVerifying}
-                        className="w-full mt-6 h-12 rounded-xl"
-                      >
-                        {isVerifying
-                          ? t.ey_register.verifying
-                          : t.ey_register.verify_continue}
-
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-
-                      {faydaVerified && faydaVerificationProfile && (
-                        <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
-                          <div className="font-semibold text-primary">
-                            {t.ey_register.verified}
-                          </div>
-                          <div className="mt-1 text-muted-foreground">
-                            {faydaVerificationProfile.name || faydaVerificationProfile.id}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                       {faydaVerified && faydaVerificationProfile && (
+                         <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
+                           <div className="font-semibold text-primary">
+                             {t.ey_register.verified}
+                           </div>
+                           <div className="mt-1 text-muted-foreground">
+                             {faydaVerificationProfile.name || faydaVerificationProfile.id}
+                           </div>
+                         </div>
+                       )}
+                     </div>
+                   </CardContent>
+                 </Card>
+               )}
 
               {/* STEP 2 */}
               {step === 2 && (
@@ -825,59 +1083,61 @@ export default function Eyregister() {
                       </p>
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="paymentMethod"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                              {t.ey_register.payment_method}
-                          </FormLabel>
+                     <FormField
+                       control={form.control}
+                       name="paymentMethod"
+                       render={({ field }) => (
+                         <FormItem>
+                           <FormLabel>
+                               {t.ey_register.payment_method}
+                           </FormLabel>
 
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={
-                                field.onChange
-                              }
-                              defaultValue={
-                                field.value
-                              }
-                              className="grid md:grid-cols-2 gap-4"
-                            >
-                              <div className="border rounded-2xl p-6">
-                                <div className="flex items-center gap-3">
-                                  <RadioGroupItem
-                                    value="bank"
-                                    id="bank"
-                                  />
+                           <FormControl>
+                             <div className="grid md:grid-cols-2 gap-4">
+                               <div className="border rounded-2xl p-6">
+                                 <div className="flex items-center gap-3">
+                                   <input
+                                     type="radio"
+                                     value="bank"
+                                     checked={field.value === "bank"}
+                                     onChange={(e) => {
+                                       field.onChange(e.target.value);
+                                     }}
+                                     id="bank"
+                                   />
 
-                                  <Building2 className="h-5 w-5" />
+                                   <Building2 className="h-5 w-5" />
 
-                                  <label htmlFor="bank">
-                                    {t.ey_register.bank_transfer}
-                                  </label>
-                                </div>
-                              </div>
+                                   <label htmlFor="bank">
+                                     {t.ey_register.bank_transfer}
+                                   </label>
+                                 </div>
+                               </div>
 
-                              <div className="border rounded-2xl p-6">
-                                <div className="flex items-center gap-3">
-                                  <RadioGroupItem
-                                    value="telebirr"
-                                    id="telebirr"
-                                  />
+                               <div className="border rounded-2xl p-6">
+                                 <div className="flex items-center gap-3">
+                                   <input
+                                     type="radio"
+                                     value="telebirr"
+                                     checked={field.value === "telebirr"}
+                                     onChange={(e) => {
+                                       field.onChange(e.target.value);
+                                     }}
+                                     id="telebirr"
+                                   />
 
-                                  <CreditCard className="h-5 w-5" />
+                                   <CreditCard className="h-5 w-5" />
 
-                                  <label htmlFor="telebirr">
-                                    {t.ey_register.telebirr}
-                                  </label>
-                                </div>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                                   <label htmlFor="telebirr">
+                                     {t.ey_register.telebirr}
+                                   </label>
+                                 </div>
+                               </div>
+                             </div>
+                           </FormControl>
+                         </FormItem>
+                       )}
+                     />
 
                     {paymentMethod === "bank" && (
                       <div className="mt-6">
@@ -902,31 +1162,48 @@ export default function Eyregister() {
                       </div>
                     )}
 
-                    <div className="flex justify-between mt-10">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() =>
-                          setStep(2)
-                        }
-                      >
-                        <ChevronLeft className="mr-2 h-4 w-4" />
-                        {t.ey_register.back}
-                      </Button>
+                      <div className="flex justify-between mt-10">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            setStep(2)
+                          }
+                        >
+                          <ChevronLeft className="mr-2 h-4 w-4" />
+                          {t.ey_register.back}
+                        </Button>
 
-                      <Button
-                        type="submit"
-                        disabled={
-                          isProcessingPayment
-                        }
-                      >
-                        {isProcessingPayment
-                          ? t.ey_register.processing
-                          : t.ey_register.complete_registration}
-
-                        <CheckCircle2 className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
+                        {(paymentMethod === "telebirr" && !telebirrPaymentVerified) ? (
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              // Trigger Telebirr payment process
+                              onSubmit(form.getValues());
+                            }}
+                            disabled={
+                              isProcessingPayment || isVerifyingTelebirr
+                            }
+                          >
+                            {isProcessingPayment || isVerifyingTelebirr
+                              ? t.ey_register.processing
+                              : t.ey_register.pay_with_telebirr}
+                            <CreditCard className="ml-2 h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            type="submit"
+                            disabled={
+                              isProcessingPayment
+                            }
+                          >
+                            {isProcessingPayment
+                              ? t.ey_register.processing
+                              : t.ey_register.complete_registration}
+                            <CheckCircle2 className="ml-2 h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                   </CardContent>
                 </Card>
               )}

@@ -17,6 +17,7 @@
     "drizzle-orm": "catalog:",
     "dotenv": "^16.0.0",
     "express": "^5",
+    "fayda-auth-sdk": "^1.0.0",
     "pino": "^9",
     "pino-http": "^10"
   },
