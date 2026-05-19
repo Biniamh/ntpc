@@ -9,6 +9,9 @@ export interface NotificationData {
   roundNumber: number;
   roundDates?: { from: string; to: string };
   participantName: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
   coordinatorId?: string | number;
 }
 
@@ -58,7 +61,7 @@ export class NotificationService {
       const transporter = nodemailer.createTransport(this.smtpConfig);
       
       await transporter.sendMail({
-        from: `"NTPC" <${this.smtpConfig.auth.user}>`,
+        from: `"መልካም ወጣት" <${this.smtpConfig.auth.user}>`,
         to: data.email,
         subject: emailSubject,
         html: emailBody,
@@ -149,10 +152,14 @@ export class NotificationService {
     return { emailSent, smsSent };
   }
 
-  /**
-   * Generate HTML email body
-   */
+/**
+    * Generate HTML email body
+    */
   private generateEmailBody(data: NotificationData): string {
+    const fullName = [data.firstName, data.middleName, data.lastName]
+      .filter(Boolean)
+      .join(" ") || data.participantName;
+    
     return `
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -163,7 +170,7 @@ export class NotificationService {
 
           <div style="background: #f9f9f9; padding: 20px; margin-top: 20px; border-radius: 5px;">
             <h2>የምዝገባ ማረጋገጫ</h2>
-            <p>Dear ${data.participantName},</p>
+            <p>Dear ${fullName},</p>
             
             <p>ስለተመዘገቡ እናመሰግናለን <strong>${data.eventName}</strong>. ምዝገባዎ በተሳካ ሁኔታ ተካሂዷል.</p>
 
@@ -198,10 +205,14 @@ export class NotificationService {
     * Generate SMS body with registration details
     */
   private generateSMSBody(data: NotificationData): string {
+    const displayName = [data.firstName, data.middleName, data.lastName]
+      .filter(Boolean)
+      .join(" ") || data.participantName;
+    
     const roundInfo = data.roundDates
       ? ` ቀናት: ከ ${data.roundDates.from} እስከ ${data.roundDates.to}.`
       : "";
-    return `ሰላም ${data.participantName}, የ ${data.eventName} ምዝገባዎ በተሳካ ሁኔታ ተጠናቋል! የምዝገባ ቁጥር: Reg#: ${data.registrationNumber}, ዙር ${data.roundNumber}.${roundInfo} አስተባባሪ ID: ${data.coordinatorId || "N/A"}. መልካም ቆይታ ይሁንሎት!`;
+    return `ሰላም ${displayName}, የ ${data.eventName} ምዝገባዎ በተሳካ ሁኔታ ተጠናቋል! የምዝገባ ቁጥር: Reg#: ${data.registrationNumber}, ዙር ${data.roundNumber}.${roundInfo} አስተባባሪ ID: ${data.coordinatorId || "N/A"}. መልካም ቆይታ ይሁንሎት!`;
   }
 }
 

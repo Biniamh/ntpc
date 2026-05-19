@@ -249,20 +249,23 @@ router.post("/ey-participants", async (req, res) => {
       .returning();
 
 if (participant) {
-       await notificationService.sendNotification({
-         email: participant.email,
-         phoneNumber: participant.phoneNumber,
-         registrationNumber: participant.registrationNumber,
-         eventName: event.title,
-         roundNumber: round.roundNumber,
-         roundDates: {
-           from: round.fromDate || "",
-           to: round.toDate || "",
-         },
-         participantName: `${participant.firstName} ${participant.lastName}`,
-         coordinatorId: coordinatorId?.toString(),
-       });
-     }
+        await notificationService.sendNotification({
+          email: participant.email,
+          phoneNumber: participant.phoneNumber,
+          registrationNumber: participant.registrationNumber,
+          eventName: event.title,
+          roundNumber: round.roundNumber,
+          roundDates: {
+            from: round.fromDate || "",
+            to: round.toDate || "",
+          },
+          participantName: `${participant.firstName} ${participant.lastName}`,
+          firstName: participant.firstName,
+          middleName: participant.middleName,
+          lastName: participant.lastName,
+          coordinatorId: coordinatorId?.toString(),
+        });
+      }
 
     res.status(201).json({
       ...participant,
