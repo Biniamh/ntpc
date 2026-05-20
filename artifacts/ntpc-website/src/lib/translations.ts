@@ -109,7 +109,7 @@ header: {
        },
        membershipDialog: {
          title: "Membership Request",
-         churchName: "Church Name",
+         churchName: "Ethiopian New Testament Priests Church",
          formTitle: "Membership Application Form",
          memberId: "Member ID",
          dateFiled: "Date Filed",
@@ -491,12 +491,12 @@ dashboard: {
       },
       membershipDialog: {
         title: "የአባልነት ጥያቄ",
-        churchName: "የቤተክርስቲያን ስም",
+        churchName: "የኢትዮጵያ አዲስ ኪዳን ካህናት ቤተክርስቲያን",
         formTitle: "የአባልነት ምዝገባ ቅጽ",
         memberId: "የአባል መለያ ቁጥር",
         dateFiled: "የማስገባት ቀን",
         profilePhoto: "የፕሮፋይል ፎቶ",
-        providedByApplicant: "ከአካታቢ የቀረበ",
+        providedByApplicant: "በተመዝጋቢ የቀረበ",
         personalInfo: "የግል መረጃ",
         fullName: "ሙሉ ስም",
         phone: "ስልክ",
