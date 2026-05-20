@@ -60,8 +60,7 @@ function Router() {
   component={Eyregister} />
               
 <Route path="/contact" component={Contact} />
-               <Route path="/reports" component={Reports} />
-               <Route component={NotFound} />
+                <Route component={NotFound} />
             </Switch>
           </main>
           <Footer />

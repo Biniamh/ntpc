@@ -18,5 +18,7 @@ export interface MembershipRequest {
   previousChurch: string;
   servingAs: string;
   baptized: boolean;
+  profilePhotoUrl?: string;
+  status: string;
   createdAt: string;
 }

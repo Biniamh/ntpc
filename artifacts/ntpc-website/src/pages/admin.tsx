@@ -45,6 +45,7 @@ import {
 } from "@workspace/api-client-react";
 import { useAuthStore } from "@/hooks/use-auth";
 import { useLanguage } from "@/lib/language-provider";
+import { useTheme } from "@/lib/theme-provider";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,13 +56,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut, Trash2, Plus, BookOpen, Calendar, Users, HeartHandshake, BookMarked, Shield, Church, Star, Target, UserCheck, BarChart3, Building2 } from "lucide-react";
+import { LogOut, Trash2, Plus, BookOpen, Calendar, Users, HeartHandshake, BookMarked, Shield, Church, Star, Target, UserCheck, BarChart3, Building2, Sun, Moon } from "lucide-react";
 import { format } from "date-fns";
 import { DataTable } from "@/components/DataTable";
 import { PostEditDialog } from "@/components/PostEditDialog";
 import { EventEditDialog } from "@/components/EventEditDialog";
 import { BadgeGenerationModal } from "@/components/BadgeGenerationModal";
+import { MembershipInfoDialog } from "@/components/MembershipInfoDialog";
 import Reports from "@/pages/reports";
+import { Eye } from "lucide-react";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username required"),
@@ -203,6 +206,7 @@ function LoginForm() {
 function AdminDashboard() {
   const { language, setLanguage, t } = useLanguage();
   const { logout } = useAuthStore();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -268,28 +272,57 @@ function AdminDashboard() {
       const response = await fetch(`/api/ey-participants/${participantId}/generate-badge`, {
         method: "POST",
       });
-      if (!response.ok) throw new Error("Failed to generate badge");
-      // The API updates the database and returns HTML, we just need success confirmation
+      if (!response.ok) throw new Error(t.admin.badge_failed || "Failed to generate badge");
       return { success: true };
     },
     onSuccess: () => {
-      // Badge was successfully generated and marked in the database
       queryClient.invalidateQueries({ queryKey: getListEyParticipantsQueryKey() });
       setShowBadgeModal(false);
       setBadgeParticipant(null);
       toast({
-        title: "Badge Generated Successfully!",
-        description: "The badge has been generated and saved. The participant list has been updated.",
+        title: t.admin.badge_generated || "Badge Generated!",
+        description: t.admin.badge_saved || "The badge has been generated and saved.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error generating badge",
-        description: error.message || "Failed to generate badge",
+        title: t.admin.badge_error || "Error",
+        description: error.message || (t.admin.badge_failed || "Failed to generate badge"),
         variant: "destructive",
       });
     },
   });
+
+  // ─── Membership status update mutation ────────────────────────────
+  const updateMemberStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const response = await fetch(`/api/membership/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error(t.admin.common.error || "Failed to update member status");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: getListMembershipRequestsQueryKey() });
+      toast({ title: t.admin.status_updated || "Status updated" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t.admin.common.error || "Error",
+        description: error.message || (t.admin.common.error || "Failed to update status"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleMemberDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setShowMemberDialog(false);
+      setSelectedMember(null);
+    }
+  };
 
   // Edit dialog states
   const [editingPost, setEditingPost] = useState<any>(null);
@@ -308,6 +341,8 @@ function AdminDashboard() {
   const [departmentEditOpen, setDepartmentEditOpen] = useState(false);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const [badgeParticipant, setBadgeParticipant] = useState<any>(null);
+  const [showMemberDialog, setShowMemberDialog] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
 
   const postForm = useForm<PostValues>({ resolver: zodResolver(postSchema), defaultValues: { title: "", highlights: "", photoUrl: "", facebookUrl: "", youtubeUrl: "" } });
   const eventForm = useForm<EventValues>({ resolver: zodResolver(eventSchema), defaultValues: { title: "", description: "", date: "", imageUrl: "" } });
@@ -448,9 +483,9 @@ function AdminDashboard() {
         queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
         setEventEditOpen(false);
         setEditingEvent(null);
-        toast({ title: "Event updated!" });
+        toast({ title: t.admin.events.updated })
       },
-      onError: () => toast({ title: "Error updating event", variant: "destructive" }),
+      onError: () => toast({ title: t.admin.events.update_error, variant: "destructive" }),
     });
   }
 
@@ -513,9 +548,9 @@ function AdminDashboard() {
         queryClient.invalidateQueries({ queryKey: getListEyEventsQueryKey() });
         setEyEventEditOpen(false);
         setEditingEyEvent(null);
-        toast({ title: "EY Event updated!" });
+        toast({ title: t.admin.ey.event_updated });
       },
-      onError: () => toast({ title: "Error updating EY event", variant: "destructive" }),
+      onError: () => toast({ title: t.admin.ey.error_updating_event, variant: "destructive" }),
     });
   }
 
@@ -540,9 +575,9 @@ function AdminDashboard() {
         queryClient.invalidateQueries({ queryKey: getListEyRoundsQueryKey() });
         setEyRoundEditOpen(false);
         setEditingEyRound(null);
-        toast({ title: "EY Round updated!" });
+        toast({ title: t.admin.ey.round_updated });
       },
-      onError: () => toast({ title: "Error updating round", variant: "destructive" }),
+      onError: () => toast({ title: t.admin.ey.error_updating_round, variant: "destructive" }),
     });
   }
 
@@ -559,7 +594,7 @@ function AdminDashboard() {
         queryClient.invalidateQueries({ queryKey: getListEyParticipantsQueryKey() });
         setEyParticipantEditOpen(false);
         setEditingEyParticipant(null);
-        toast({ title: "Participant updated!" });
+        toast({ title: t.admin.ey.participant_updated });
       },
       onError: (error) => toast({ title: "Error updating participant", description: error.message, variant: "destructive" }),
     });
@@ -697,6 +732,9 @@ function AdminDashboard() {
              {activeSection === 'church' ? t.admin.header.church_portal : activeSection === 'ey' ? t.admin.header.ey_management : t.admin.header.reports}
            </h1>
           <Button size="sm" variant="secondary" onClick={() => setLanguage(language === "en" ? "am" : "en")}>{language === "en" ? "EN" : "አማ"}</Button>
+          <Button size="sm" variant="secondary" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
         </div>
 
         <div className="flex-1 p-6">
@@ -743,9 +781,14 @@ function AdminDashboard() {
                setEventEditOpen={setEventEditOpen}
                setEditingPost={setEditingPost}
                setEditingEvent={setEditingEvent}
-               handleSavePost={handleSavePost}
-               handleSaveEvent={handleSaveEvent}
-             />
+  handleSavePost={handleSavePost}
+  handleSaveEvent={handleSaveEvent}
+  updateMemberStatus={updateMemberStatus}
+  isSavingMemberStatus={updateMemberStatus.isPending}
+  handleMemberDialogOpenChange={handleMemberDialogOpenChange}
+  setSelectedMember={setSelectedMember}
+  setShowMemberDialog={setShowMemberDialog}
+              />
            ) : activeSection === 'ey' ? (
  <ExcellentYouthContent
                eyEventForm={eyEventForm}
@@ -1030,26 +1073,35 @@ handleGenerateBadge={(participant: any) => {
       </Dialog>
 
       {/* Badge Generation Modal */}
-      {badgeParticipant && (
-        <BadgeGenerationModal
-          open={showBadgeModal}
-          onOpenChange={(open) => {
-            if (!open) {
-              setShowBadgeModal(false);
-              setBadgeParticipant(null);
-            }
-          }}
-          participant={badgeParticipant}
-          event={eyEvents.find((e: any) => e.id === badgeParticipant.eventId)}
-          round={eyRounds.find((r: any) => r.id === badgeParticipant.roundId)}
-          coordinator={eyCoordinators.find((c: any) => c.id === badgeParticipant.coordinatorId)}
-          onConfirm={() => generateBadgeMutation.mutate(badgeParticipant.id)}
-          isGenerating={generateBadgeMutation.isPending}
+{badgeParticipant && (
+         <BadgeGenerationModal
+           open={showBadgeModal}
+           onOpenChange={(open) => {
+             if (!open) {
+               setShowBadgeModal(false);
+               setBadgeParticipant(null);
+             }
+           }}
+           participant={badgeParticipant}
+           event={eyEvents.find((e: any) => e.id === badgeParticipant.eventId)}
+           round={eyRounds.find((r: any) => r.id === badgeParticipant.roundId)}
+           coordinator={eyCoordinators.find((c: any) => c.id === badgeParticipant.coordinatorId)}
+           onConfirm={() => generateBadgeMutation.mutate(badgeParticipant.id)}
+           isGenerating={generateBadgeMutation.isPending}
+         />
+       )}
+
+        {/* Membership Info Dialog */}
+        <MembershipInfoDialog
+          open={showMemberDialog}
+          onOpenChange={handleMemberDialogOpenChange}
+          member={selectedMember}
+          onSaveStatus={(id, status) => updateMemberStatus.mutate({ id, status })}
+          isSavingStatus={updateMemberStatus.isPending}
         />
-      )}
-    </div>
-  );
-}
+     </div>
+   );
+ }
 
 // Church Portal Content Component
 function ChurchPortalContent({
@@ -1096,6 +1148,11 @@ function ChurchPortalContent({
   setEditingEvent,
   handleSavePost,
   handleSaveEvent,
+  updateMemberStatus,
+  isSavingMemberStatus,
+  handleMemberDialogOpenChange,
+  setSelectedMember,
+  setShowMemberDialog,
 }: any) {
   const { t } = useLanguage();
 
@@ -1395,26 +1452,53 @@ function ChurchPortalContent({
             <CardTitle>{t.admin.church.membership_requests}</CardTitle>
           </CardHeader>
           <CardContent>
-            <DataTable
-              data={memberList}
-              columns={[
-                { key: "firstName", header: t.admin.church.first_name || "First Name", searchable: true, sortable: true },
-                { key: "middleName", header: t.admin.church.middle_name || "Middle Name", searchable: true },
-                { key: "lastName", header: t.admin.church.last_name || "Last Name", searchable: true, sortable: true },
-                { key: "phone", header: t.admin.church.phone, searchable: true },
-                { key: "email", header: t.admin.church.email, searchable: true },
-                { key: "occupation", header: t.admin.church.occupation, searchable: true },
-                { key: "previousChurch", header: t.admin.church.previous_church || "Previous Church", searchable: true },
-                { key: "servingAs", header: t.admin.church.serving_as || "Serving As", searchable: true },
-                { key: "baptized", header: t.admin.church.baptized || "Baptized", render: (value) => (
-                  <Badge variant={value ? "default" : "secondary"}>{value ? t.admin.church.yes : t.admin.church.no}</Badge>
-                )},
-                { key: "createdAt", header: t.admin.church.date, sortable: true, render: (value) => format(new Date(value), 'MMM d, yyyy') },
-              ]}
-              searchPlaceholder={t.admin.church.search_membership}
-              loading={loadingMembers}
-              exportFileName="membership-requests"
-            />
+<DataTable
+                data={memberList}
+                 columns={[
+                  { key: "firstName", header: t.admin.church.first_name || "First Name", searchable: true, sortable: true },
+                  { key: "middleName", header: t.admin.church.middle_name || "Middle Name", searchable: true },
+                  { key: "lastName", header: t.admin.church.last_name || "Last Name", searchable: true, sortable: true },
+                  { key: "phone", header: t.admin.church.phone, searchable: true },
+                  { key: "email", header: t.admin.church.email, searchable: true },
+                  { key: "occupation", header: t.admin.church.occupation, searchable: true },
+                  { key: "previousChurch", header: t.admin.church.previous_church || "Previous Church", searchable: true },
+                  { key: "servingAs", header: t.admin.church.serving_as || "Serving As", searchable: true },
+                  {
+                    key: "status",
+                    header: t.admin.church.status || "Status",
+                    searchable: true,
+                    sortable: true,
+                    render: (value: string) => {
+                      const labels: Record<string, string> = {
+                        pending:   t.admin.membershipDialog.statusPending   || "Pending",
+                        approved:  t.admin.membershipDialog.statusApproved  || "Approved",
+                        rejected:  t.admin.membershipDialog.statusRejected  || "Rejected",
+                      };
+                      const colors: Record<string, string> = {
+                        pending: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-600",
+                        approved: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-600",
+                        rejected: "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/40 dark:text-red-300 dark:border-red-600",
+                      };
+                      return (
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${colors[value] || colors.pending}`}>
+                          {labels[value] || value}
+                        </span>
+                      );
+                    },
+                  },
+                  { key: "baptized", header: t.admin.church.baptized || "Baptized", render: (value) => (
+                    <Badge variant={value ? "default" : "secondary"}>{value ? t.admin.church.yes : t.admin.church.no}</Badge>
+                  )},
+                  { key: "createdAt", header: t.admin.church.date, sortable: true, render: (value) => format(new Date(value), 'MMM d, yyyy') },
+                ]}
+                searchPlaceholder={t.admin.church.search_membership}
+                onView={(member) => {
+                  setSelectedMember(member);
+                  setShowMemberDialog(true);
+                }}
+                loading={loadingMembers}
+                exportFileName="membership-requests"
+              />
           </CardContent>
         </Card>
       </TabsContent>

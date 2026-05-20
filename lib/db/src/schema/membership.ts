@@ -13,6 +13,8 @@ export const membershipRequestsTable = pgTable("membership_requests", {
   previousChurch: text("previous_church").notNull(),
   servingAs: text("serving_as").notNull(),
   baptized: boolean("baptized").notNull(),
+  profilePhotoUrl: text("profile_photo_url"),
+  status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

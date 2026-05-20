@@ -4,6 +4,7 @@ import { DailyScripture } from "@/components/DailyScripture";
 import { useListPosts, useListEvents } from "@workspace/api-client-react";
 import { Calendar, ArrowRight, BookOpen, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -107,7 +108,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="inline-block mb-6 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm"
           >
-            <span className="text-sm font-medium tracking-wider uppercase">Welcome to NTPC</span>
+            <span className="text-sm font-medium tracking-wider uppercase">{t.home.welcome}</span>
           </motion.div>
           
           <motion.h1
@@ -119,14 +120,14 @@ export default function Home() {
             {language === 'am' ? t.hero.slogan : "ለኔ ህይወት ክርስቶስ ነዉ!"}
           </motion.h1>
           
-          {language === 'en' && (
+            {language === 'en' && (
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
               className="text-xl md:text-2xl font-serif text-white/80 mb-10 max-w-2xl mx-auto"
             >
-              For me to live is Christ!
+              {t.home.hero_subtitle}
             </motion.p>
           )}
 
@@ -186,7 +187,7 @@ export default function Home() {
                   </Card>
                 )) : (
                   <div className="text-center p-8 border border-dashed rounded-lg text-muted-foreground">
-                    No recent posts available.
+                    {t.home.no_posts}
                   </div>
                 )}
               </div>
@@ -223,7 +224,7 @@ export default function Home() {
                   </div>
                 )) : (
                   <div className="text-center p-8 border border-dashed rounded-lg text-muted-foreground">
-                    No upcoming events.
+                    {t.home.no_events}
                   </div>
                 )}
               </div>
@@ -233,88 +234,343 @@ export default function Home() {
             </div>
 
           </div>
-        </div>
-      </section>
+</div>
+        </section>
 
-      {/* Call to Action */}
-      <section className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
-        <div className="container px-4 text-center relative z-10">
-          <HeartHandshake className="h-16 w-16 mx-auto mb-6 opacity-80" />
-          <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Be Part of the Community</h2>
-<p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-10">
-            Whether you want to join us for worship, serve in a department, or support the ministry, there is a place for you here.
-          </p>
+        {/* Church Information Section */}
+        <section className="py-24 bg-background relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Button asChild size="lg" variant="secondary" className="rounded-full px-8 bg-white text-primary hover:bg-gray-100">
-              <Link href="/join">Become a Member</Link>
-            </Button>
-            <Button asChild size="lg" className="rounded-full px-8 border-2 border-white/30 bg-transparent hover:bg-white/10 text-white">
-              <Link href="/support">Support the Work</Link>
-            </Button>
-          </motion.div>
-        </div>
-      </section>
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl"
+          />
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"
+          />
+          <div className="container px-4 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
+                {t.home.our_story}
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 text-primary">
+                {t.home.about_church}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                {t.home.church_description}
+              </p>
+            </motion.div>
 
-      {/* Decoration Section */}
-      <section className="py-16 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 relative overflow-hidden">
-        <div className="container px-4 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="flex justify-center"
-              >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Our Mission",
+                  description: "To make disciples of all nations, teaching them to obey everything Jesus commanded, and to be a blessing to our community through love, service, and the proclamation of the Gospel.",
+                  icon: "🎯",
+                  color: "primary"
+                },
+                {
+                  title: "Our Vision",
+                  description: "To be a thriving church that transforms lives, impacts communities, and advances God's kingdom on earth through authentic worship, biblical teaching, and compassionate outreach.",
+                  icon: "👁️",
+                  color: "secondary"
+                },
+                {
+                  title: "Our Values",
+                  description: "We are committed to biblical truth, authentic community, passionate worship, compassionate service, and global missions. Every believer is valued and equipped to serve.",
+                  icon: "❤️",
+                  color: "primary"
+                }
+              ].map((item, index) => (
                 <motion.div
-                  animate={{
-                    y: [0, -15, 0],
-                    rotate: [0, 10, -10, 0],
-                  }}
-                  transition={{
-                    duration: 4 + (i % 3),
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: i * 0.2,
-                  }}
-                  className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-secondary shadow-lg"
-                  style={{ opacity: (30 + i * 5) / 100 }}
-                />
-              </motion.div>
-            ))}
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.8 }}
-            className="text-center mt-12"
-          >
-            <p className="text-muted-foreground text-lg font-serif italic">
-              "Let us consider how we may spur one another on toward love and good deeds"
-            </p>
-            <p className="text-muted-foreground text-sm mt-2">Hebrews 10:24</p>
-          </motion.div>
-        </div>
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-20 -right-20 w-64 h-64 border-2 border-primary/10 rounded-full"
-        />
-        <motion.div
-          animate={{ rotate: -360 }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-32 -left-32 w-96 h-96 border-2 border-secondary/10 rounded-full"
-        />
-      </section>
+                  key={item.title}
+                  initial={{ opacity: 0, y: 50, rotateX: -10 }}
+                  whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                  className="group"
+                >
+                  <div className="bg-card border rounded-2xl p-8 text-center hover:shadow-xl transition-all h-full relative overflow-hidden">
+                    <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-${item.color} to-${item.color}/50`}></div>
+                    <motion.div 
+                      className="text-5xl mb-4 group-hover:scale-110 transition-transform"
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, delay: index * 0.5 }}
+                    >
+                      {item.icon}
+                    </motion.div>
+                    <h3 className="text-2xl font-serif font-bold mb-4 text-primary">{item.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
 
-      <DailyScripture />
-    </div>
-  );
-}
+            {/* Church History Timeline */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="mt-20 max-w-4xl mx-auto"
+            >
+              <h3 className="text-2xl font-serif font-bold text-center mb-8 text-primary">Our Journey</h3>
+              <div className="relative">
+                <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-primary/20"></div>
+                {[
+                  { year: "2010", event: "Church Founded", desc: "Started with 50 faithful members" },
+                  { year: "2015", event: "First Expansion", desc: "Moved to current location" },
+                  { year: "2020", event: "Community Impact", desc: "Launched outreach programs" },
+                  { year: "2024", event: "Digital Ministry", desc: "Online services and global reach" }
+                ].map((item, index) => (
+                  <motion.div
+                    key={item.year}
+                    initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className={`relative flex items-center mb-8 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}
+                  >
+                    <div className={`w-5/12 ${index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
+                      <h4 className="font-bold text-primary">{item.event}</h4>
+                      <p className="text-sm text-muted-foreground">{item.desc}</p>
+                    </div>
+                    <motion.div 
+                      className="w-2/12 flex justify-center"
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
+                    >
+                      <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                        {item.year}
+                      </div>
+                    </motion.div>
+                    <div className="w-5/12"></div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="mt-16 text-center"
+            >
+              <div className="inline-flex items-center gap-4 bg-primary/5 px-8 py-4 rounded-full">
+                <span className="text-primary font-serif text-lg">{t.home.worship_sunday}</span>
+              </div>
+            </motion.div>
+</div>
+        </section>
+
+        {/* Testimonial Section */}
+        <section className="py-24 bg-card relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-3"></div>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+            className="absolute -top-40 -right-40 w-80 h-80 border-2 border-primary/10 rounded-full"
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 70, repeat: Infinity, ease: "linear" }}
+            className="absolute -bottom-40 -left-40 w-96 h-96 border-2 border-secondary/10 rounded-full"
+          />
+          
+          <div className="container px-4 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
+                {t.home.testimonies}
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 text-primary">
+                {t.home.lives_transformed}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.home.testimonies_intro}
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {[
+                {
+                  name: "Brother Yohannes M.",
+                  role: "5 years at NTPC",
+                  quote: "This church has been my family. Through every trial, the community has stood by me and helped me grow in my faith.",
+                  avatar: "👨"
+                },
+                {
+                  name: "Sister Mekdes T.",
+                  role: "3 years at NTPC",
+                  quote: "The youth ministry shaped who I am today. I found purpose, friendship, and a deeper relationship with Jesus.",
+                  avatar: "👩"
+                }
+              ].map((item, index) => (
+                <motion.div
+                  key={item.name}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                  className="bg-background rounded-2xl p-8 border relative"
+                >
+                  <div className="absolute top-4 right-4 text-4xl opacity-10">"</div>
+                  <p className="text-lg italic mb-6 relative z-10">"{item.quote}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl">
+                      {item.avatar}
+                    </div>
+                    <div>
+                      <p className="font-bold">{item.name}</p>
+                      <p className="text-sm text-muted-foreground">{item.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Call to Action */}
+        <section className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
+          <div className="container px-4 text-center relative z-10">
+            <HeartHandshake className="h-16 w-16 mx-auto mb-6 opacity-80" />
+            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">{t.home.be_part}</h2>
+            <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-10">
+              {t.home.cta_intro}
+            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+            >
+              <Button asChild size="lg" variant="secondary" className="rounded-full px-8 bg-white text-primary hover:bg-gray-100">
+                <Link href="/join">{t.home.become_member}</Link>
+              </Button>
+              <Button asChild size="lg" className="rounded-full px-8 border-2 border-white/30 bg-transparent hover:bg-white/10 text-white">
+                <Link href="/support">{t.home.support_work}</Link>
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Church Services & Ministries Section */}
+        <section className="py-24 bg-gradient-to-b from-primary/5 to-background relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+          <div className="container px-4 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
+                {t.home.our_ministries}
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 text-primary">
+                {t.home.ministries_section_title}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                {t.home.ministries_intro}
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Sunday Worship",
+                  description: "Join us every Sunday at 9:00 AM for powerful worship, inspiring messages, and meaningful fellowship. Experience the presence of God in a welcoming atmosphere.",
+                  icon: "⛪",
+                  time: "Sundays 9:00 AM",
+                  color: "primary"
+                },
+                {
+                  title: "Prayer & Fasting",
+                  description: "Mid-week prayer meetings every Wednesday at 6:00 PM. A time for intercession, spiritual warfare, and seeking God's face for breakthroughs.",
+                  icon: "🙏",
+                  time: "Wednesdays 6:00 PM",
+                  color: "secondary"
+                },
+                {
+                  title: "Youth Ministry",
+                  description: "Empowering the next generation through Excellent Youth programs, mentorship, and leadership development. Ages 13-25 welcome!",
+                  icon: "✝️",
+                  time: "Saturdays 4:00 PM",
+                  color: "primary"
+                },
+                {
+                  title: "Women's Fellowship",
+                  description: "Building strong women of faith through Bible study, prayer groups, and community service. Monthly gatherings and special events.",
+                  icon: "👩",
+                  time: "2nd Saturday 3:00 PM",
+                  color: "secondary"
+                },
+                {
+                  title: "Men's Ministry",
+                  description: "Developing godly men through accountability groups, leadership training, and service opportunities. Building character and spiritual strength.",
+                  icon: "👨",
+                  time: "1st Saturday 8:00 AM",
+                  color: "primary"
+                },
+                {
+                  title: "Children's Church",
+                  description: "Safe, engaging environment where children learn about Jesus through age-appropriate lessons, songs, and activities during Sunday services.",
+                  icon: "👶",
+                  time: "Sundays 9:00 AM",
+                  color: "secondary"
+                }
+              ].map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 50, rotateX: -10 }}
+                  whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                  className="group"
+                >
+                  <div className="bg-card border rounded-2xl p-8 h-full hover:shadow-xl transition-all relative overflow-hidden">
+                    <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-${item.color} to-${item.color}/50`}></div>
+                    <motion.div 
+                      className="text-6xl mb-4 group-hover:scale-110 transition-transform"
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: index * 0.5 }}
+                    >
+                      {item.icon}
+                    </motion.div>
+                    <h3 className="text-2xl font-serif font-bold mb-3 text-primary">{item.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed mb-4 text-sm">{item.description}</p>
+                    <Badge variant="outline" className="text-xs">
+                      {item.time}
+                    </Badge>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <DailyScripture />
+      </div>
+    );
+  }

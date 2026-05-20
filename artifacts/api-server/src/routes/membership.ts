@@ -80,13 +80,21 @@ router.put("/membership/:id", async (req, res) => {
     return;
   }
 
-  const parsed = CreateMembershipRequestBody.partial().safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Invalid request body" });
-    return;
+  // Accept only the fields we allow to be updated (status, profilePhotoUrl)
+  const { status, profilePhotoUrl } = req.body as {
+    status?: string;
+    profilePhotoUrl?: string | null;
+  };
+
+  const updateData: Record<string, unknown> = {};
+  if (typeof status === "string" && status.trim().length > 0) {
+    updateData.status = status.trim();
+  }
+  if (profilePhotoUrl !== undefined && profilePhotoUrl !== null) {
+    updateData.profile_photo_url = profilePhotoUrl;
   }
 
-  if (Object.keys(parsed.data).length === 0) {
+  if (Object.keys(updateData).length === 0) {
     res.status(400).json({ error: "No fields to update" });
     return;
   }
@@ -94,7 +102,7 @@ router.put("/membership/:id", async (req, res) => {
   try {
     const [request] = await db
       .update(membershipRequestsTable)
-      .set(parsed.data)
+      .set(updateData as any)
       .where(eq(membershipRequestsTable.id, id))
       .returning();
 

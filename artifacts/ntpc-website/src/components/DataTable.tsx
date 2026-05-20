@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Search, Download, Edit, Trash2, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { Search, Download, Edit, Trash2, ChevronLeft, ChevronRight, MoreHorizontal, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,23 +24,24 @@ interface SearchByOption {
 }
 
 interface DataTableProps<T> {
-  data: T[];
-  columns: Column<T>[];
-  searchPlaceholder?: string;
-  searchByLabel?: string;
-  searchByOptions?: SearchByOption[];
-  searchBy?: string;
-  searchByValue?: Record<string, string>;
-  onSearchByChange?: (value: string) => void;
-  onSearchByValueChange?: (values: Record<string, string>) => void;
-  onEdit?: (item: T) => void;
-  onDelete?: (item: T) => void;
-  onGenerateBadge?: (item: T) => void;
-  loading?: boolean;
-  exportable?: boolean;
-  exportFileName?: string;
-  itemsPerPage?: number;
-}
+   data: T[];
+   columns: Column<T>[];
+   searchPlaceholder?: string;
+   searchByLabel?: string;
+   searchByOptions?: SearchByOption[];
+   searchBy?: string;
+   searchByValue?: Record<string, string>;
+   onSearchByChange?: (value: string) => void;
+   onSearchByValueChange?: (values: Record<string, string>) => void;
+   onEdit?: (item: T) => void;
+   onDelete?: (item: T) => void;
+   onGenerateBadge?: (item: T) => void;
+   onView?: (item: T) => void;
+   loading?: boolean;
+   exportable?: boolean;
+   exportFileName?: string;
+   itemsPerPage?: number;
+ }
 
 export function DataTable<T extends { id: number | string }>({
   data,
@@ -55,6 +56,7 @@ export function DataTable<T extends { id: number | string }>({
   onEdit,
   onDelete,
   onGenerateBadge,
+  onView,
   loading = false,
   exportable = true,
   exportFileName = "data",
@@ -421,13 +423,13 @@ export function DataTable<T extends { id: number | string }>({
                   </div>
                 </TableHead>
               ))}
-              {(onEdit || onDelete || onGenerateBadge) && <TableHead className="w-32">Actions</TableHead>}
+              {(onEdit || onDelete || onGenerateBadge || onView) && <TableHead className="w-32">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length + ((onEdit || onDelete || onGenerateBadge) ? 1 : 0)} className="h-24 text-center">
+                <TableCell colSpan={columns.length + ((onEdit || onDelete || onGenerateBadge || onView) ? 1 : 0)} className="h-24 text-center">
                   No results found.
                 </TableCell>
               </TableRow>
@@ -441,9 +443,20 @@ export function DataTable<T extends { id: number | string }>({
                         : String(item[column.key as keyof T] || "")}
                     </TableCell>
                   ))}
-                  {(onEdit || onDelete || onGenerateBadge) && (
+                  {(onEdit || onDelete || onGenerateBadge || onView) && (
                     <TableCell>
                       <div className="flex items-center space-x-1">
+                        {onView && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onView(item)}
+                            className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10"
+                            title="View"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        )}
                         {onGenerateBadge && (
                           <Button
                             variant="ghost"

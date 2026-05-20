@@ -79,6 +79,8 @@ export const ListMembershipRequestsResponseItem = zod.object({
   previousChurch: zod.string(),
   servingAs: zod.string(),
   baptized: zod.boolean(),
+  profilePhotoUrl: zod.string().optional(),
+  status: zod.string().default("pending"),
   createdAt: zod.string(),
 });
 export const ListMembershipRequestsResponse = zod.array(
@@ -99,6 +101,7 @@ export const CreateMembershipRequestBody = zod.object({
   previousChurch: zod.string(),
   servingAs: zod.string(),
   baptized: zod.boolean(),
+  profilePhotoUrl: zod.string().optional(),
 });
 
 /**
